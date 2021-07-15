@@ -1,8 +1,11 @@
 package com.revature.models;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class User {
+public class User implements Serializable{
 	private int id; //Unique ID of each user
 	private String username; //The unique username of the user
 	private String password; //The password used to log in
@@ -11,4 +14,97 @@ public class User {
 	private List<Order> pastOrders; //The orders the user has made in the past
 	private AccountType accountType; //What kind of account the user is
 	private boolean isActive; //True if the account is still active. False if it has been deactivated.
+	
+	public User() {
+		super();
+		this.cart = new ArrayList<CartItem>();
+		this.pastOrders = new ArrayList<Order>();
+	}
+	
+	public User(int id, String username, String password, String email, AccountType accountType, boolean isActive) {
+		this();
+		this.id = id;
+		this.username = username;
+		this.password = password;
+		this.email = email;
+		this.accountType = accountType;
+		this.isActive = isActive;
+	}
+
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public List<CartItem> getCart() {
+		return cart;
+	}
+	public void setCart(List<CartItem> cart) {
+		this.cart = cart;
+	}
+	public List<Order> getPastOrders() {
+		return pastOrders;
+	}
+	public void setPastOrders(List<Order> pastOrders) {
+		this.pastOrders = pastOrders;
+	}
+	public AccountType getAccountType() {
+		return accountType;
+	}
+	public void setAccountType(AccountType accountType) {
+		this.accountType = accountType;
+	}
+	public boolean isActive() {
+		return isActive;
+	}
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(accountType, cart, email, id, isActive, password, pastOrders, username);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		User other = (User) obj;
+		return accountType == other.accountType && Objects.equals(cart, other.cart)
+				&& Objects.equals(email, other.email) && id == other.id && isActive == other.isActive
+				&& Objects.equals(password, other.password) && Objects.equals(pastOrders, other.pastOrders)
+				&& Objects.equals(username, other.username);
+	}
+
+	@Override
+	public String toString() {
+		return "User [id=" + id + ", username=" + username + ", password=" + password + ", email=" + email + ", cart="
+				+ cart + ", pastOrders=" + pastOrders + ", accountType=" + accountType + ", isActive=" + isActive + "]";
+	}
+	
+	
 }

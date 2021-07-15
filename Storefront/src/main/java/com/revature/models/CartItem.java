@@ -1,5 +1,7 @@
 package com.revature.models;
 
-public class CartItem {
+import java.io.Serializable;
+
+public class CartItem implements Serializable{
 
 }
