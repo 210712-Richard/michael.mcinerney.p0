@@ -9,7 +9,7 @@
 * 
 * As a user, I can log in.
 * As a user, I can log out.
-* As a user, I can edit my password and email.
+* As a user, I can edit my password.
 
 ### Customer Stories
 * As a user, I can register for a customer account.
@@ -28,4 +28,4 @@
 
 ### Administrator Stories
 * As an administrator, I can create manager accounts.
-* As an administrator, I can deactivate manager accounts.
+* As an administrator, I can deactivate manager and customer accounts.

@@ -62,31 +62,12 @@ public class Menu {
 				break;
 			case 2:
 				//Register for a customer account
-				String newUsername = "";
-				do {
-					System.out.println("Please enter a username:");
-					newUsername = scanner.nextLine();
-					//Checks to see if the username has been taken or not.
-					//False means that it is in use already, true otherwise.
-					if (!us.isUsernameUnique(newUsername)) {
-						System.out.println(newUsername + " is already is use. Please try again.\n");
-					}
-				} while(!us.isUsernameUnique(newUsername));
-				
-				System.out.println("Please enter a password:");
-				String newPassword = scanner.nextLine();
-				System.out.println("Please enter your email address:");
-				String newEmail = scanner.nextLine();
-				System.out.println("Registering your account...");
-				
-				//This will create the new customer account.
-				activeUser = us.register(newUsername, newPassword, newEmail, AccountType.CUSTOMER);
+				activeUser = createAccount(AccountType.CUSTOMER);
 				if (activeUser == null) {
-					System.out.println("There was a problem setting up your account. Please try again!");
+					System.out.println("There was a problem setting up your account. Please try again.\n");
 				} else {
 					openCustomerMenu();
 				}
-				
 				break;
 			case 3:
 				//Close
@@ -180,7 +161,13 @@ public class Menu {
 			
 			switch(getUserInput()) {
 			case 1:
-				//TODO: Create manager accounts
+				//Create manager accounts
+				User newManager = createAccount(AccountType.MANAGER);
+				if (newManager == null) {
+					System.out.println("Error creating account. Please try again.\n");
+				} else {
+					System.out.println("Account Successfully Created! Please give login information to the manager.");
+				}
 				break;
 			case 2:
 				//TODO: Edit if an account is active or not
@@ -211,5 +198,27 @@ public class Menu {
 		System.out.println(); //Puts in a linebreak.
 		return userInput;
 		
+	}
+	
+	private static User createAccount(AccountType type) {
+		String newUsername = "";
+		do {
+			System.out.println("Please enter a username:");
+			newUsername = scanner.nextLine();
+			//Checks to see if the username has been taken or not.
+			//False means that it is in use already, true otherwise.
+			if (!us.isUsernameUnique(newUsername)) {
+				System.out.println(newUsername + " is already is use. Please try again.\n");
+			}
+		} while(!us.isUsernameUnique(newUsername));
+		
+		System.out.println("Please enter a password:");
+		String newPassword = scanner.nextLine();
+		System.out.println("Please enter an email address:");
+		String newEmail = scanner.nextLine();
+		System.out.println("Registering your account...");
+		
+		//This will create the new customer account.
+		return us.register(newUsername, newPassword, newEmail, type);
 	}
 }
