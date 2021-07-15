@@ -9,7 +9,7 @@
 * 
 * As a user, I can log in.
 * As a user, I can log out.
-* As a user, I can edit my password.
+* As a user, I can edit my password and email.
 
 ### Customer Stories
 * As a user, I can register for a customer account.
