@@ -28,4 +28,4 @@
 
 ### Administrator Stories
 * As an administrator, I can create manager accounts.
-* As an administrator, I can deactivate manager accounts.
+* As an administrator, I can deactivate manager and customer accounts.

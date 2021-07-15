@@ -37,7 +37,19 @@ public class UserDAO {
 		new Serializer<User>().writeObjectsToFile(users, filename);
 	}
 	
-	public User register(String username, String password, String email, AccountType type) {
-		return null;
+	public User createUser(String username, String password, String email, AccountType type) {
+		User newUser = new User(users.size(), username, password, email, type, true);
+		users.add(newUser);
+		return newUser;
+	}
+	
+	
+	public boolean checkUsername(String username) {
+		for (User user : users) {
+			if (username.equals(user.getUsername())) { //Checks to make sure the username is unique
+				return false;
+			}
+		}
+		return true;
 	}
 }
