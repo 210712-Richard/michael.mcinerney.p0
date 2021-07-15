@@ -52,4 +52,9 @@ public class UserDAO {
 		}
 		return true;
 	}
+	
+	public User editUser(User user) {
+		//Just a placeholder for now.
+		return null;
+	}
 }

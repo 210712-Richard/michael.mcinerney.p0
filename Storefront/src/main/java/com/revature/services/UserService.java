@@ -31,4 +31,11 @@ public class UserService {
 		return isUnique;
 	}
 	
+	public User changeUserDetails(User user) {
+		//Will not actually do anything except save the file. Will be used later when its time to work
+		//with a backend.
+		ud.writeToFile();
+		return user;
+	}
+	
 }

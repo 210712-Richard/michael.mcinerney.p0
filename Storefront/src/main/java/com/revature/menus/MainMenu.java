@@ -7,7 +7,7 @@ import com.revature.models.User;
 import com.revature.services.UserService;
 import com.revature.util.SingletonScanner;
 
-public class Menu {
+public class MainMenu {
 	
 	private static Scanner scanner = SingletonScanner.getInstance().getScan();
 	
@@ -87,7 +87,7 @@ public class Menu {
 		customerLoop: while(true) {
 			System.out.println("\t1. Search for Items"); 
 			System.out.println("\t2. Go to Cart");
-			System.out.println("\t3. Edit Settings");
+			System.out.println("\t3. Edit Account Settings");
 			System.out.println("\t4. Logout");
 			
 			switch(getUserInput()) {
@@ -99,6 +99,7 @@ public class Menu {
 				break;
 			case 3:
 				//TODO: Add ability to edit password and email
+				openCustomerSettings();
 				break;
 			case 4:
 				//Logout
@@ -120,7 +121,7 @@ public class Menu {
 			System.out.println("\t1. Edit Inventory");
 			System.out.println("\t2. Deactivate Customer Account");
 			System.out.println("\t3. Refund Order");
-			System.out.println("\t4. Edit Settings");
+			System.out.println("\t4. Edit password");
 			System.out.println("\t5. Logout");
 			
 			switch(getUserInput()) {
@@ -134,7 +135,7 @@ public class Menu {
 				//TODO: Refund an order
 				break;
 			case 4:
-				//TODO: Edit Settings
+				//TODO: Edit Password for Managers
 				break;
 			case 5:
 				//Logout
@@ -156,7 +157,7 @@ public class Menu {
 		managerLoop: while(true) {
 			System.out.println("\t1. Create Manager Account");
 			System.out.println("\t2. Deactivate or Reactivate an Account");
-			System.out.println("\t3. Edit Settings");
+			System.out.println("\t3. Edit Account Settings");
 			System.out.println("\t4. Logout");
 			
 			switch(getUserInput()) {
@@ -187,7 +188,30 @@ public class Menu {
 			}
 		}
 	}
-	
+	private static void openCustomerSettings() {
+		
+		customerSettingsLoop: while(true) {
+			System.out.println("Settings Page. Please select an option:");
+			System.out.println("\t1. Change email");
+			System.out.println("\t2. Change password");
+			System.out.println("\t3. Deactivate Account");
+			System.out.println("\t4. Go Back");
+			
+			switch(getUserInput()) {
+			case 1:
+				changeEmail();
+				break;
+			case 2:
+				changePassword();
+				break;
+			case 3:
+				//TODO: Deactivate account
+			case 4:
+				//Go Back
+				break customerSettingsLoop;
+			}
+		}
+	}
 	private static int getUserInput() {
 		int userInput;
 		try{
@@ -220,5 +244,42 @@ public class Menu {
 		
 		//This will create the new customer account.
 		return us.register(newUsername, newPassword, newEmail, type);
+	}
+	
+	private static void changeEmail() {
+		System.out.println("Your current email address is "+ activeUser.getEmail()+ ". Please enter a new email address: ");
+		String newEmail = scanner.nextLine();
+		System.out.println("Saving email address...");
+		activeUser.setEmail(newEmail);
+		activeUser = us.changeUserDetails(activeUser);
+		System.out.println("Email address saved.");
+	}
+	
+	private static void changePassword() {
+		String currentPassword = "";
+		do {
+			System.out.println("Please enter current password:");
+			currentPassword = scanner.nextLine();
+			if (!activeUser.getPassword().equals(currentPassword)) {
+				System.out.println("That password was incorrect. Please try again.\n");
+			}
+		} while(!activeUser.getPassword().equals(currentPassword));
+		
+		String newPassword = "";
+		String confirmPassword = " ";
+		do {
+			System.out.println("Please enter your new password:");
+			newPassword = scanner.nextLine();
+			System.out.println("Please reenter to confirm your password:");
+			confirmPassword = scanner.nextLine();
+			if (!newPassword.equals(confirmPassword)) {
+				System.out.println("Those passwords did not match. Please try again.\n");
+			}
+		} while(!newPassword.equals(confirmPassword));
+		
+		System.out.println("Saving password...");
+		activeUser.setPassword(newPassword);
+		us.changeUserDetails(activeUser);
+		System.out.println("Password Saved.");
 	}
 }
