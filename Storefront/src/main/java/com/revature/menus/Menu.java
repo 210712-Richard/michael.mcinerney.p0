@@ -30,36 +30,38 @@ public class Menu {
 			
 			switch (getUserInput()) {
 			case 1:
-				//TODO: Login
+				//Login
+				//Have the user input their username and password
 				System.out.println("Please enter your username:");
 				String username = scanner.nextLine();
 				System.out.println("Please enter your password");
 				String password = scanner.nextLine();
+				
 				System.out.println("Logging you in...");
-				activeUser = us.login(username, password);
-				if (activeUser == null) {
+				activeUser = us.login(username, password); //Will check if the user exists.
+				if (activeUser == null) { //If the user was not found.
 					System.out.println("Login details did not match, please try again.\n");
 				}
-				else if (activeUser.isActive() == false) {
+				else if (activeUser.isActive() == false) { //If the user has been deactivated.
 					System.out.println("Your account has been deactivated. Please contact a manager.\n");
 					break main;
 				}
-				System.out.println("\nHello " + activeUser.getUsername() + "! What would you like to do?");
-				if (activeUser.getAccountType() == AccountType.CUSTOMER) {
+				else if (activeUser.getAccountType() == AccountType.CUSTOMER) { //User is a customer
 					openCustomerMenu();
 				}
-				else if(activeUser.getAccountType() == AccountType.MANAGER) {
+				else if(activeUser.getAccountType() == AccountType.MANAGER) { //User is a manager
 					openManagerMenu();
 				}
-				else if(activeUser.getAccountType() == AccountType.ADMINISTRATOR) {
+				else if(activeUser.getAccountType() == AccountType.ADMINISTRATOR) { //User is a admin
 					openAdminMenu();
 				}
-				else {
+				else { //Somehow, the user is none of those things.
 					System.out.println("There is a problem with your account. Please contact a manager or administrator.");
 				}
 				break;
 			case 2:
 				//TODO: Register
+				break;
 			case 3:
 				//Close
 				System.out.println("Have a nice day!");
@@ -67,23 +69,100 @@ public class Menu {
 				break main;
 			default:
 				//Error
-				System.out.println("Invalid Input. Please try again.\n");			}
+				System.out.println("Invalid Input. Please try again.\n");
+				break;
+			}
 		}
 	}
 	
 	private static void openCustomerMenu() {
-		//TODO: Add customer functionality
-		System.out.println("Functionality coming soon!");
+		System.out.println("Hello " + activeUser.getUsername()+ "! What would you like to do?");
+		customerLoop: while(true) {
+			System.out.println("\t1. Search for Items"); 
+			System.out.println("\t2. Go to Cart");
+			System.out.println("\t3. Edit Settings");
+			System.out.println("\t4. Logout");
+			
+			switch(getUserInput()) {
+			case 1:
+				//TODO: Search for items.
+				break;
+			case 2:
+				//TODO: View, edit, and checkout cart
+				break;
+			case 3:
+				//TODO: Add ability to edit password and email
+				break;
+			case 4:
+				//Logout
+				System.out.println("Logging you out...\n");
+				activeUser = null;
+				break customerLoop;
+			default:
+				//Input error
+				System.out.println("Please enter a valid option:");
+				break;
+				
+			}
+		}
 	}
 	
 	private static void openManagerMenu() {
-		//TODO: Add manager functionality
-		System.out.println("Functionality coming soon!");
+		System.out.println("Hello " + activeUser.getUsername() + "! What would you like to do?");
+		managerLoop: while(true) {
+			System.out.println("\t1. Edit Inventory");
+			System.out.println("\t2. Deactivate Customer Account");
+			System.out.println("\t3. Refund Order");
+			System.out.println("\t4. Edit Settings");
+			System.out.println("\t5. Logout");
+			
+			switch(getUserInput()) {
+			case 1:
+				//TODO: Edit Inventory
+			case 2:
+				//TODO: Deactivate Customer Account
+			case 3:
+				//TODO: Refund an order
+			case 4:
+				//TODO: Edit Settings
+			case 5:
+				//Logout
+				System.out.println("Logging you out...");
+				activeUser = null;
+				break managerLoop;
+			default:
+				//Input error
+				System.out.println("Please enter a valid option:");
+				break;
+			}
+		}
+		
+		
 	}
 	
 	private static void openAdminMenu() {
-		//TODO: Add admin functionality
-		System.out.println("Functionality coming soon!");
+		System.out.println("Hello " + activeUser.getUsername() + "! What would you like to do?");
+		managerLoop: while(true) {
+			System.out.println("\t2. Deactivate or Reactivate an Account");
+			System.out.println("\t4. Edit Settings");
+			System.out.println("\t5. Logout");
+			
+			switch(getUserInput()) {
+			case 1:
+				//TODO: Edit if an account is active or not
+			case 2:
+				//TODO: Edit email and password
+			case 3:
+				//Logout
+				System.out.println("Logging you out...");
+				activeUser = null;
+				break managerLoop;
+			default:
+				//Input error
+				System.out.println("Please enter a valid option:");
+				break;
+			}
+		}
 	}
 	
 	private static int getUserInput() {
