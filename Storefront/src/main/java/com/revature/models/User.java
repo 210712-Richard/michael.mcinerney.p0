@@ -102,7 +102,7 @@ public class User implements Serializable{
 
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", username=" + username + ", password=" + password + ", email=" + email + ", cart="
+		return "User [id=" + id + ", username=" + username + ", email=" + email + ", cart="
 				+ cart + ", pastOrders=" + pastOrders + ", accountType=" + accountType + ", isActive=" + isActive + "]";
 	}
 	
