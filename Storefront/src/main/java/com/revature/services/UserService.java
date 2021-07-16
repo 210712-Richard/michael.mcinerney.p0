@@ -11,6 +11,9 @@ public class UserService {
 	private UserDAO ud = new UserDAO();
 	
 	public User login(String username, String password) {
+		if (username == null || password == null || username.isBlank() || password.isBlank()) {
+			return null;
+		}
 		User u = ud.getUser(username, password);
 		ud.writeToFile();
 		return u;
@@ -28,6 +31,9 @@ public class UserService {
 	 * @return false if the username has already been registers, true otherwise
 	 */
 	public boolean isUsernameUnique(String username) {
+		if(username == null || username.isBlank() ) {
+			return false;
+		}
 		boolean isUnique = ud.checkUsername(username);
 		ud.writeToFile();
 		return isUnique;

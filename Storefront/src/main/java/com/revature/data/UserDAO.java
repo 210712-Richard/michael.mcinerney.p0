@@ -7,7 +7,7 @@ import com.revature.models.AccountType;
 import com.revature.models.User;
 
 public class UserDAO {
-	private static List<User> users;
+	public static List<User> users;
 	
 	private static String filename = "users.dat";
 	
