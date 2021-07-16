@@ -140,7 +140,8 @@ public class MainMenu {
 				//TODO: Refund an order
 				break;
 			case 4:
-				//TODO: Edit Password for Managers
+				//Edit Password for Managers
+				changePassword();
 				break;
 			case 5:
 				//Logout
@@ -159,12 +160,13 @@ public class MainMenu {
 	
 	private static void openAdminMenu() {
 		System.out.println("Hello " + activeUser.getUsername() + "! What would you like to do?");
-		managerLoop: while(true) {
+		adminLoop: while(true) {
 			System.out.println("\t1. Create Manager Account");
-			System.out.println("\t2. Reactivate an Account");
-			System.out.println("\t3. Deactivate an Account");
-			System.out.println("\t4. Edit Account Settings");
-			System.out.println("\t5. Logout");
+			System.out.println("\t2. Create Admin Account");
+			System.out.println("\t3. Reactivate an Account");
+			System.out.println("\t4. Deactivate an Account");
+			System.out.println("\t5. Edit Password");
+			System.out.println("\t6. Logout");
 			
 			switch(getUserInput()) {
 			case 1:
@@ -177,21 +179,31 @@ public class MainMenu {
 				}
 				break;
 			case 2:
+				//Create manager accounts
+				User newAdmin = createAccount(AccountType.MANAGER);
+				if (newAdmin == null) {
+					System.out.println("Error creating account. Please try again.\n");
+				} else {
+					System.out.println("Account Successfully Created! Please give login information to the administrator.");
+				}
+				break;
+			case 3:
 				//Reactivate an account
 				adminAccountStatusMenu(true);
 				break;
-			case 3:
+			case 4:
 				//Edit if an account is active or not
 				adminAccountStatusMenu(false);
 				break;
-			case 4:
-				//TODO: Edit email and password
-				break;
 			case 5:
+				//Edit password
+				changePassword();
+				break;
+			case 6:
 				//Logout
 				System.out.println("Logging you out...");
 				activeUser = null;
-				break;
+				break adminLoop;
 			default:
 				//Input error
 				System.out.println("Please enter a valid option:");
@@ -344,7 +356,7 @@ public class MainMenu {
 						if (userList.get(i).getUsername() != activeUser.getUsername()) {
 							System.out.println("\t" + Integer.toString(i+1) + ". " + userList.get(i).getUsername());
 						}
-						System.out.println("\t" + Integer.toString(userList.size()+1)+ ". Quit");
+						System.out.println("\n\t" + Integer.toString(userList.size()+1)+ ". Quit");
 					}
 					int option = Integer.parseInt(scanner.nextLine())-1;
 					if (option >= 0 && option < userList.size()) {
@@ -380,7 +392,7 @@ public class MainMenu {
 	
 	private static void adminAccountStatusMenu(boolean isReactivating) {
 		adminAccountLoop: while(true) {
-			System.out.println("\nWhich type of account do you want to modify?");
+			System.out.println("\nWhich type of account do you want to "+ (isReactivating ? "reactivate" : "deactivate")+"?");
 			System.out.println("\t1. Customer");
 			System.out.println("\t2. Manager");
 			System.out.println("\t3. Back");
