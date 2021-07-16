@@ -57,4 +57,14 @@ public class UserDAO {
 		//Just a placeholder for now.
 		return null;
 	}
+	
+	public List<User> findUsersByName(String searchString, AccountType type, boolean status){
+		ArrayList<User> retUsers = new ArrayList<User>();
+		for (User user : users) {
+			if (user.getUsername().contains(searchString) && user.getAccountType() == type && user.isActive() == status) {
+				retUsers.add(user);
+			}
+		}
+		return retUsers;
+	}
 }

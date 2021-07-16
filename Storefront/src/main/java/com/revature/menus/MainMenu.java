@@ -1,5 +1,6 @@
 package com.revature.menus;
 
+import java.util.List;
 import java.util.Scanner;
 
 import com.revature.models.AccountType;
@@ -44,7 +45,7 @@ public class MainMenu {
 					System.out.println("Login details did not match, please try again.\n");
 				}
 				else if (activeUser.isActive() == false) { //If the user has been deactivated.
-					System.out.println("Your account has been deactivated. Please contact a manager.\n");
+					System.out.println("Your account has been deactivated. Please contact an administrator.\n");
 					break main;
 				}
 				else if (activeUser.getAccountType() == AccountType.CUSTOMER) { //User is a customer
@@ -57,7 +58,7 @@ public class MainMenu {
 					openAdminMenu();
 				}
 				else { //Somehow, the user is none of those things.
-					System.out.println("There is a problem with your account. Please contact a manager or administrator.");
+					System.out.println("There is a problem with your account. Please contact an administrator.");
 				}
 				break;
 			case 2:
@@ -100,6 +101,9 @@ public class MainMenu {
 			case 3:
 				//TODO: Add ability to edit password and email
 				openCustomerSettings();
+				if (activeUser == null) {
+					break customerLoop;
+				}
 				break;
 			case 4:
 				//Logout
@@ -129,8 +133,9 @@ public class MainMenu {
 				//TODO: Edit Inventory
 				break;
 			case 2:
-				//TODO: Deactivate Customer Account
-				break;
+				//Deactivate Customer Account
+				changeActiveStatusMenu(false, AccountType.CUSTOMER, false);
+				break managerLoop;
 			case 3:
 				//TODO: Refund an order
 				break;
@@ -156,9 +161,10 @@ public class MainMenu {
 		System.out.println("Hello " + activeUser.getUsername() + "! What would you like to do?");
 		managerLoop: while(true) {
 			System.out.println("\t1. Create Manager Account");
-			System.out.println("\t2. Deactivate or Reactivate an Account");
-			System.out.println("\t3. Edit Account Settings");
-			System.out.println("\t4. Logout");
+			System.out.println("\t2. Reactivate an Account");
+			System.out.println("\t3. Deactivate an Account");
+			System.out.println("\t4. Edit Account Settings");
+			System.out.println("\t5. Logout");
 			
 			switch(getUserInput()) {
 			case 1:
@@ -171,16 +177,21 @@ public class MainMenu {
 				}
 				break;
 			case 2:
-				//TODO: Edit if an account is active or not
+				//Reactivate an account
+				adminAccountStatusMenu(true);
 				break;
 			case 3:
-				//TODO: Edit email and password
+				//Edit if an account is active or not
+				adminAccountStatusMenu(false);
 				break;
 			case 4:
+				//TODO: Edit email and password
+				break;
+			case 5:
 				//Logout
 				System.out.println("Logging you out...");
 				activeUser = null;
-				break managerLoop;
+				break;
 			default:
 				//Input error
 				System.out.println("Please enter a valid option:");
@@ -205,7 +216,12 @@ public class MainMenu {
 				changePassword();
 				break;
 			case 3:
-				//TODO: Deactivate account
+				//Deactivate account
+				changeActiveStatusMenu(true, AccountType.CUSTOMER, true);
+				if (activeUser == null) {
+					break customerSettingsLoop;
+				}
+				break;
 			case 4:
 				//Go Back
 				break customerSettingsLoop;
@@ -281,5 +297,108 @@ public class MainMenu {
 		activeUser.setPassword(newPassword);
 		us.changeUserDetails(activeUser);
 		System.out.println("Password Saved.");
+	}
+	
+	private static void changeActiveStatusMenu(boolean editingSelf, AccountType type, boolean status) {
+		if (editingSelf) {
+			System.out.println("\nAre you sure you want to deactivate your account? This option cannot be undone: [Y]es/[n]o");
+			String affirm = scanner.nextLine();
+			
+			switch(affirm) {
+			case "Y":
+				System.out.println("Deactivating account...");
+				activeUser.setActive(false);
+				us.changeUserDetails(activeUser);
+				activeUser = null;
+				System.out.println("Your account has been deactivated. If you want to reactivate it, please contact an administrator.\n");
+			default:
+				break;
+			}
+		}
+		else {
+			String activateString = status ? "reactivate" : "deactivate";
+			if (
+				(type == AccountType.CUSTOMER && (activeUser.getAccountType() == AccountType.MANAGER || activeUser.getAccountType() == AccountType.ADMINISTRATOR))
+				|| type != AccountType.ADMINISTRATOR && (activeUser.getAccountType() == AccountType.ADMINISTRATOR)) {
+				
+				List<User> userList = null;
+				do {
+					System.out.println("Please enter a username to search with. If you want to see all users, just press the 'Enter' key.");
+					System.out.println("To Quit, type 'quit':");
+					String searchString = scanner.nextLine();
+					if (searchString == "quit") {
+						return;
+					}
+					System.out.println("Searching for users...");
+					userList = us.searchUserByName(searchString, type, !status);
+					if (userList == null) {
+						System.out.println("No accounts were found with that name. Please try again.\n");
+					}
+				} while(userList == null);
+				
+				boolean validOptionSelected = false;
+				User selectedUser = null;
+				do {
+					System.out.println("Please select a username from the list or quit:");
+					for (int i = 0; i < userList.size(); i++) {
+						if (userList.get(i).getUsername() != activeUser.getUsername()) {
+							System.out.println("\t" + Integer.toString(i+1) + ". " + userList.get(i).getUsername());
+						}
+						System.out.println("\t" + Integer.toString(userList.size()+1)+ ". Quit");
+					}
+					int option = Integer.parseInt(scanner.nextLine())-1;
+					if (option >= 0 && option < userList.size()) {
+						validOptionSelected = true;
+						selectedUser = userList.get(option);
+					}
+					else if(option == userList.size()) {
+						return;
+					}
+					else {
+						System.out.println("Please select a valid option.\n");
+					}
+				} while(!validOptionSelected);
+				
+				System.out.println("Are you sure you want to "+ activateString +" "+ selectedUser.getUsername() +"? [Y]es/[n]o");
+				String affirm = scanner.nextLine();
+				switch(affirm) {
+				case "Y":
+					System.out.println("Trying to "+activateString+" this account...");
+					selectedUser.setActive(status);
+					us.changeUserDetails(selectedUser);
+					System.out.println("Account "+ activateString +"d.");
+				default:
+					break;
+					
+				}
+			}
+			else {
+				System.out.println("You are not authorized to deactivate these kinds of accounts.");
+			}
+		}
+	}
+	
+	private static void adminAccountStatusMenu(boolean isReactivating) {
+		adminAccountLoop: while(true) {
+			System.out.println("\nWhich type of account do you want to modify?");
+			System.out.println("\t1. Customer");
+			System.out.println("\t2. Manager");
+			System.out.println("\t3. Back");
+			AccountType type;
+			switch(getUserInput()) {
+			case 1:
+				changeActiveStatusMenu(false, AccountType.CUSTOMER, isReactivating);
+				break adminAccountLoop;
+			case 2:
+				changeActiveStatusMenu(false, AccountType.MANAGER, isReactivating);
+				break adminAccountLoop;
+			case 3:
+				break adminAccountLoop;
+			default:
+					System.out.println("Invalid input. Please try again.");
+					break;
+			}
+		}
+		
 	}
 }

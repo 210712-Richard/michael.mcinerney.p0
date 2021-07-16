@@ -1,5 +1,7 @@
 package com.revature.services;
 
+import java.util.List;
+
 import com.revature.data.UserDAO;
 import com.revature.models.AccountType;
 import com.revature.models.User;
@@ -36,6 +38,15 @@ public class UserService {
 		//with a backend.
 		ud.writeToFile();
 		return user;
+	}
+	
+	public List<User> searchUserByName(String searchString, AccountType type, boolean status){
+		List<User> userList = ud.findUsersByName(searchString, type, status);
+		ud.writeToFile();
+		if (userList.isEmpty()) {
+			return null;
+		}
+		return userList;
 	}
 	
 }
