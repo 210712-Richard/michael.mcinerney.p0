@@ -1,9 +1,9 @@
 package com.revature;
 
-import com.revature.menus.Menu;
+import com.revature.menus.MainMenu;
 
 public class Driver {
 	public static void main(String[] args) {
-		Menu.start();
+		MainMenu.start();
 	}
 }
