@@ -1,7 +1,11 @@
 package com.revature.menus;
 
+import java.awt.Menu;
 import java.util.List;
 import java.util.Scanner;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.revature.models.AccountType;
 import com.revature.models.User;
@@ -9,60 +13,68 @@ import com.revature.services.UserService;
 import com.revature.util.SingletonScanner;
 
 public class MainMenu {
-	
+
+	private static final Logger log = LogManager.getLogger(MainMenu.class);
+
 	private static Scanner scanner = SingletonScanner.getInstance().getScan();
-	
+
 	private static UserService us = new UserService();
-	
+
 	private static User activeUser = null;
-	
+
 	public static void start() {
+		log.trace("Starting Storefront. start()");
 		openMainMenu();
-		
+
 	}
-	
+
 	private static void openMainMenu() {
-		main: while(true) {
+		main: while (true) {
 			System.out.println("Welcome to the Storefront!");
 			System.out.println("Please Select an Option:");
 			System.out.println("\t1. Login");
 			System.out.println("\t2. Register");
 			System.out.println("\t3. Close");
 			
+			log.trace("User selecting input for openMainMenu");
 			switch (getUserInput()) {
 			case 1:
-				//Login
-				//Have the user input their username and password
+				// Login
+				// Have the user input their username and password
 				System.out.println("Please enter your username:");
 				String username = scanner.nextLine();
+				log.debug("User entered username " + username);
 				System.out.println("Please enter your password");
 				String password = scanner.nextLine();
-				
+				log.debug("User entered password " + password);
+
 				System.out.println("Logging you in...");
-				activeUser = us.login(username, password); //Will check if the user exists.
-				
-				if (activeUser == null) { //If the user was not found.
+				log.trace("Going into UserService login");
+				activeUser = us.login(username, password); // Will check if the user exists.
+
+				if (activeUser == null) { // If the user was not found.
+					log.trace("User was not found. Username: " + username);
 					System.out.println("Login details did not match, please try again.\n");
-				}
-				else if (activeUser.isActive() == false) { //If the user has been deactivated.
+				} else if (activeUser.isActive() == false) { // If the user has been deactivated.
+					log.trace("User attempted to login with deactivated account. Username: " + username);
 					System.out.println("Your account has been deactivated. Please contact an administrator.\n");
 					break main;
-				}
-				else if (activeUser.getAccountType() == AccountType.CUSTOMER) { //User is a customer
+				} else if (activeUser.getAccountType() == AccountType.CUSTOMER) { // User is a customer
+					log.trace("User is a customer. Username " + username);
 					openCustomerMenu();
-				}
-				else if(activeUser.getAccountType() == AccountType.MANAGER) { //User is a manager
+				} else if (activeUser.getAccountType() == AccountType.MANAGER) { // User is a manager
+					log.trace("User is a manager. Username " + username);
 					openManagerMenu();
-				}
-				else if(activeUser.getAccountType() == AccountType.ADMINISTRATOR) { //User is a admin
+				} else if (activeUser.getAccountType() == AccountType.ADMINISTRATOR) { // User is a admin
+					log.trace("User is an administrator. Username " + username);
 					openAdminMenu();
-				}
-				else { //Somehow, the user is none of those things.
+				} else { // Somehow, the user is none of those things.
+					log.error("Problem with the user account");
 					System.out.println("There is a problem with your account. Please contact an administrator.");
 				}
 				break;
 			case 2:
-				//Register for a customer account
+				// Register for a customer account
 				activeUser = createAccount(AccountType.CUSTOMER);
 				if (activeUser == null) {
 					System.out.println("There was a problem setting up your account. Please try again.\n");
@@ -71,106 +83,123 @@ public class MainMenu {
 				}
 				break;
 			case 3:
-				//Close
+				// Close
+				log.trace("User is closing the application.");
 				System.out.println("Have a nice day!");
 				System.out.println("Closing Storefront...");
 				break main;
 			default:
-				//Error
+				// Error
+				log.trace("User tried to enter an invalid input.");
 				System.out.println("Invalid Input. Please try again.\n");
 				break;
 			}
 		}
+		log.trace("Closing application");
 	}
-	
+
 	private static void openCustomerMenu() {
-		System.out.println("Hello " + activeUser.getUsername()+ "! What would you like to do?");
-		customerLoop: while(true) {
-			System.out.println("\t1. Search for Items"); 
+		log.trace(activeUser.getUsername() + " is in the customer menu.");
+		System.out.println("Hello " + activeUser.getUsername() + "! What would you like to do?");
+		customerLoop: while (true) {
+			System.out.println("\t1. Search for Items");
 			System.out.println("\t2. Go to Cart");
 			System.out.println("\t3. Edit Account Settings");
 			System.out.println("\t4. Logout");
 			
-			switch(getUserInput()) {
+			log.trace("User selecting input for openCustomerMenu");
+			switch (getUserInput()) {
 			case 1:
-				//TODO: Search for items.
+				// TODO: Search for items.
 				break;
 			case 2:
-				//TODO: View, edit, and checkout cart
+				// TODO: View, edit, and checkout cart
 				break;
 			case 3:
-				//TODO: Add ability to edit password and email
+				// TODO: Add ability to edit password and email
+				log.trace(activeUser.getUsername() + " is going to openCustomerSettings from openCustomerMenu.");
 				openCustomerSettings();
 				if (activeUser == null) {
+					log.trace("Customer has successfully deactivated account.");
 					break customerLoop;
 				}
 				break;
 			case 4:
-				//Logout
+				// Logout
+				log.trace(activeUser.getUsername() + " is logging out.");
 				System.out.println("Logging you out...\n");
 				activeUser = null;
+				log.debug("activeUser is null: " + activeUser == null);
 				break customerLoop;
 			default:
-				//Input error
+				// Input error
+				log.trace(activeUser.getUsername() + " tried to enter an invalid input.");
 				System.out.println("Please enter a valid option:");
 				break;
-				
+
 			}
 		}
+		log.trace("Leaving openCustomerMenu.");
 	}
-	
+
 	private static void openManagerMenu() {
+		log.trace(activeUser.getUsername() + " is in openManagerMenu()");
 		System.out.println("Hello " + activeUser.getUsername() + "! What would you like to do?");
-		managerLoop: while(true) {
+		managerLoop: while (true) {
 			System.out.println("\t1. Edit Inventory");
 			System.out.println("\t2. Deactivate Customer Account");
 			System.out.println("\t3. Refund Order");
 			System.out.println("\t4. Edit password");
 			System.out.println("\t5. Logout");
 			
-			switch(getUserInput()) {
+			log.trace(activeUser.getUsername() + " is entering getUserInput from openManagerMenu");
+			switch (getUserInput()) {
 			case 1:
-				//TODO: Edit Inventory
+				// TODO: Edit Inventory
 				break;
 			case 2:
-				//Deactivate Customer Account
+				// Deactivate Customer Account
+				log.trace(activeUser.getUsername() + " is going to changeActiveStatusMenu from openManagerMenu");
 				changeActiveStatusMenu(false, AccountType.CUSTOMER, false);
 				break managerLoop;
 			case 3:
-				//TODO: Refund an order
+				// TODO: Refund an order
 				break;
 			case 4:
-				//Edit Password for Managers
+				// Edit Password for Managers
+				log.trace(activeUser.getUsername() + " is going to changePassword from openManagerMenu");
 				changePassword();
 				break;
 			case 5:
-				//Logout
+				// Logout
+				log.trace(activeUser.getUsername() + " is logging out.");
 				System.out.println("Logging you out...");
 				activeUser = null;
+				log.debug("activeUser is null: " + activeUser == null);
 				break managerLoop;
 			default:
-				//Input error
+				// Input error
+				log.trace(activeUser.getUsername() + " tried to enter an invalid input.");
 				System.out.println("Please enter a valid option:");
 				break;
 			}
 		}
-		
-		
+		log.trace("User is leaving openManagerMenu");
 	}
-	
+
 	private static void openAdminMenu() {
 		System.out.println("Hello " + activeUser.getUsername() + "! What would you like to do?");
-		adminLoop: while(true) {
+		adminLoop: while (true) {
 			System.out.println("\t1. Create Manager Account");
 			System.out.println("\t2. Create Admin Account");
 			System.out.println("\t3. Reactivate an Account");
 			System.out.println("\t4. Deactivate an Account");
 			System.out.println("\t5. Edit Password");
 			System.out.println("\t6. Logout");
-			
-			switch(getUserInput()) {
+
+			switch (getUserInput()) {
 			case 1:
-				//Create manager accounts
+				// Create manager accounts
 				User newManager = createAccount(AccountType.MANAGER);
 				if (newManager == null) {
 					System.out.println("Error creating account. Please try again.\n");
@@ -179,48 +208,50 @@ public class MainMenu {
 				}
 				break;
 			case 2:
-				//Create manager accounts
+				// Create manager accounts
 				User newAdmin = createAccount(AccountType.MANAGER);
 				if (newAdmin == null) {
 					System.out.println("Error creating account. Please try again.\n");
 				} else {
-					System.out.println("Account Successfully Created! Please give login information to the administrator.");
+					System.out.println(
+							"Account Successfully Created! Please give login information to the administrator.");
 				}
 				break;
 			case 3:
-				//Reactivate an account
+				// Reactivate an account
 				adminAccountStatusMenu(true);
 				break;
 			case 4:
-				//Edit if an account is active or not
+				// Edit if an account is active or not
 				adminAccountStatusMenu(false);
 				break;
 			case 5:
-				//Edit password
+				// Edit password
 				changePassword();
 				break;
 			case 6:
-				//Logout
+				// Logout
 				System.out.println("Logging you out...");
 				activeUser = null;
 				break adminLoop;
 			default:
-				//Input error
+				// Input error
 				System.out.println("Please enter a valid option:");
 				break;
 			}
 		}
 	}
+
 	private static void openCustomerSettings() {
-		
-		customerSettingsLoop: while(true) {
+
+		customerSettingsLoop: while (true) {
 			System.out.println("Settings Page. Please select an option:");
 			System.out.println("\t1. Change email");
 			System.out.println("\t2. Change password");
 			System.out.println("\t3. Deactivate Account");
 			System.out.println("\t4. Go Back");
-			
-			switch(getUserInput()) {
+
+			switch (getUserInput()) {
 			case 1:
 				changeEmail();
 				break;
@@ -228,61 +259,64 @@ public class MainMenu {
 				changePassword();
 				break;
 			case 3:
-				//Deactivate account
+				// Deactivate account
 				changeActiveStatusMenu(true, AccountType.CUSTOMER, true);
 				if (activeUser == null) {
 					break customerSettingsLoop;
 				}
 				break;
 			case 4:
-				//Go Back
+				// Go Back
 				break customerSettingsLoop;
 			}
 		}
 	}
+
 	private static int getUserInput() {
 		int userInput;
-		try{
+		try {
 			userInput = Integer.parseInt(scanner.nextLine());
-		} catch(Exception e) {
+		} catch (Exception e) {
 			userInput = -1;
 		}
-		System.out.println(); //Puts in a linebreak.
+		System.out.println(); // Puts in a linebreak.
+		log.trace(((activeUser == null) ? "User" : activeUser.getUsername()) + " inputted " + userInput);
 		return userInput;
-		
+
 	}
-	
+
 	private static User createAccount(AccountType type) {
 		String newUsername = "";
 		do {
 			System.out.println("Please enter a username:");
 			newUsername = scanner.nextLine();
-			//Checks to see if the username has been taken or not.
-			//False means that it is in use already, true otherwise.
+			// Checks to see if the username has been taken or not.
+			// False means that it is in use already, true otherwise.
 			if (!us.isUsernameUnique(newUsername)) {
 				System.out.println(newUsername + " is already is use. Please try again.\n");
 			}
-		} while(!us.isUsernameUnique(newUsername));
-		
+		} while (!us.isUsernameUnique(newUsername));
+
 		System.out.println("Please enter a password:");
 		String newPassword = scanner.nextLine();
 		System.out.println("Please enter an email address:");
 		String newEmail = scanner.nextLine();
 		System.out.println("Registering your account...");
-		
-		//This will create the new customer account.
+
+		// This will create the new customer account.
 		return us.register(newUsername, newPassword, newEmail, type);
 	}
-	
+
 	private static void changeEmail() {
-		System.out.println("Your current email address is "+ activeUser.getEmail()+ ". Please enter a new email address: ");
+		System.out.println(
+				"Your current email address is " + activeUser.getEmail() + ". Please enter a new email address: ");
 		String newEmail = scanner.nextLine();
 		System.out.println("Saving email address...");
 		activeUser.setEmail(newEmail);
 		activeUser = us.changeUserDetails(activeUser);
 		System.out.println("Email address saved.");
 	}
-	
+
 	private static void changePassword() {
 		String currentPassword = "";
 		do {
@@ -291,8 +325,8 @@ public class MainMenu {
 			if (!activeUser.getPassword().equals(currentPassword)) {
 				System.out.println("That password was incorrect. Please try again.\n");
 			}
-		} while(!activeUser.getPassword().equals(currentPassword));
-		
+		} while (!activeUser.getPassword().equals(currentPassword));
+
 		String newPassword = "";
 		String confirmPassword = " ";
 		do {
@@ -303,39 +337,42 @@ public class MainMenu {
 			if (!newPassword.equals(confirmPassword)) {
 				System.out.println("Those passwords did not match. Please try again.\n");
 			}
-		} while(!newPassword.equals(confirmPassword));
-		
+		} while (!newPassword.equals(confirmPassword));
+
 		System.out.println("Saving password...");
 		activeUser.setPassword(newPassword);
 		us.changeUserDetails(activeUser);
 		System.out.println("Password Saved.");
 	}
-	
+
 	private static void changeActiveStatusMenu(boolean editingSelf, AccountType type, boolean status) {
 		if (editingSelf) {
-			System.out.println("\nAre you sure you want to deactivate your account? This option cannot be undone: [Y]es/[n]o");
+			System.out.println(
+					"\nAre you sure you want to deactivate your account? This option cannot be undone: [Y]es/[n]o");
 			String affirm = scanner.nextLine();
-			
-			switch(affirm) {
+
+			switch (affirm) {
 			case "Y":
 				System.out.println("Deactivating account...");
 				activeUser.setActive(false);
 				us.changeUserDetails(activeUser);
 				activeUser = null;
-				System.out.println("Your account has been deactivated. If you want to reactivate it, please contact an administrator.\n");
+				System.out.println(
+						"Your account has been deactivated. If you want to reactivate it, please contact an administrator.\n");
 			default:
 				break;
 			}
-		}
-		else {
+		} else {
 			String activateString = status ? "reactivate" : "deactivate";
-			if (
-				(type == AccountType.CUSTOMER && (activeUser.getAccountType() == AccountType.MANAGER || activeUser.getAccountType() == AccountType.ADMINISTRATOR))
-				|| type != AccountType.ADMINISTRATOR && (activeUser.getAccountType() == AccountType.ADMINISTRATOR)) {
-				
+			if ((type == AccountType.CUSTOMER && (activeUser.getAccountType() == AccountType.MANAGER
+					|| activeUser.getAccountType() == AccountType.ADMINISTRATOR))
+					|| type != AccountType.ADMINISTRATOR
+							&& (activeUser.getAccountType() == AccountType.ADMINISTRATOR)) {
+
 				List<User> userList = null;
 				do {
-					System.out.println("Please enter a username to search with. If you want to see all users, just press the 'Enter' key.");
+					System.out.println(
+							"Please enter a username to search with. If you want to see all users, just press the 'Enter' key.");
 					System.out.println("To Quit, type 'quit':");
 					String searchString = scanner.nextLine();
 					if (searchString == "quit") {
@@ -346,58 +383,56 @@ public class MainMenu {
 					if (userList == null) {
 						System.out.println("No accounts were found with that name. Please try again.\n");
 					}
-				} while(userList == null);
-				
+				} while (userList == null);
+
 				boolean validOptionSelected = false;
 				User selectedUser = null;
 				do {
 					System.out.println("Please select a username from the list or quit:");
 					for (int i = 0; i < userList.size(); i++) {
 						if (userList.get(i).getUsername() != activeUser.getUsername()) {
-							System.out.println("\t" + Integer.toString(i+1) + ". " + userList.get(i).getUsername());
+							System.out.println("\t" + Integer.toString(i + 1) + ". " + userList.get(i).getUsername());
 						}
-						System.out.println("\n\t" + Integer.toString(userList.size()+1)+ ". Quit");
+						System.out.println("\n\t" + Integer.toString(userList.size() + 1) + ". Quit");
 					}
-					int option = Integer.parseInt(scanner.nextLine())-1;
+					int option = Integer.parseInt(scanner.nextLine()) - 1;
 					if (option >= 0 && option < userList.size()) {
 						validOptionSelected = true;
 						selectedUser = userList.get(option);
-					}
-					else if(option == userList.size()) {
+					} else if (option == userList.size()) {
 						return;
-					}
-					else {
+					} else {
 						System.out.println("Please select a valid option.\n");
 					}
-				} while(!validOptionSelected);
-				
-				System.out.println("Are you sure you want to "+ activateString +" "+ selectedUser.getUsername() +"? [Y]es/[n]o");
+				} while (!validOptionSelected);
+
+				System.out.println("Are you sure you want to " + activateString + " " + selectedUser.getUsername()
+						+ "? [Y]es/[n]o");
 				String affirm = scanner.nextLine();
-				switch(affirm) {
+				switch (affirm) {
 				case "Y":
-					System.out.println("Trying to "+activateString+" this account...");
+					System.out.println("Trying to " + activateString + " this account...");
 					selectedUser.setActive(status);
 					us.changeUserDetails(selectedUser);
-					System.out.println("Account "+ activateString +"d.");
+					System.out.println("Account " + activateString + "d.");
 				default:
 					break;
-					
+
 				}
-			}
-			else {
+			} else {
 				System.out.println("You are not authorized to deactivate these kinds of accounts.");
 			}
 		}
 	}
-	
+
 	private static void adminAccountStatusMenu(boolean isReactivating) {
-		adminAccountLoop: while(true) {
-			System.out.println("\nWhich type of account do you want to "+ (isReactivating ? "reactivate" : "deactivate")+"?");
+		adminAccountLoop: while (true) {
+			System.out.println("\nWhich type of account do you want to " + (isReactivating ? "reactivate" : "deactivate") + "?");
 			System.out.println("\t1. Customer");
 			System.out.println("\t2. Manager");
 			System.out.println("\t3. Back");
 			AccountType type;
-			switch(getUserInput()) {
+			switch (getUserInput()) {
 			case 1:
 				changeActiveStatusMenu(false, AccountType.CUSTOMER, isReactivating);
 				break adminAccountLoop;
@@ -407,10 +442,10 @@ public class MainMenu {
 			case 3:
 				break adminAccountLoop;
 			default:
-					System.out.println("Invalid input. Please try again.");
-					break;
+				System.out.println("Invalid input. Please try again.");
+				break;
 			}
 		}
-		
+
 	}
 }
