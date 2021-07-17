@@ -130,7 +130,7 @@ public class MainMenu {
 						((activeUser == null) ? "User" : activeUser.getUsername()) + " is back in openCustomerMenu().");
 				if (activeUser == null) {
 					log.trace("Customer has successfully deactivated account.");
-					break customerLoop;
+					break;
 				}
 				break;
 			case 4:
@@ -506,7 +506,7 @@ public class MainMenu {
 					System.out.println("To Quit, type 'quit':");
 					String searchString = scanner.nextLine(); // Enter a username to search or 'quit' to quit
 					log.debug(activeUser.getUsername() + " entered searchString: " + searchString);
-					if (searchString == "quit") { // If 'quit' was entered, leave the application.
+					if (searchString.equals("quit")) { // If 'quit' was entered, leave the application.
 						log.trace(((activeUser == null) ? "User" : activeUser.getUsername())
 								+ " is exiting changeActiveStatusMenu.");
 						return;
