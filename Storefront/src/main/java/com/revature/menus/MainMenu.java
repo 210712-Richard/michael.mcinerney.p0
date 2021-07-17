@@ -130,7 +130,7 @@ public class MainMenu {
 						((activeUser == null) ? "User" : activeUser.getUsername()) + " is back in openCustomerMenu().");
 				if (activeUser == null) {
 					log.trace("Customer has successfully deactivated account.");
-					break;
+					break customerLoop;
 				}
 				break;
 			case 4:
@@ -174,7 +174,7 @@ public class MainMenu {
 				changeActiveStatusMenu(false, AccountType.CUSTOMER, false);
 				log.trace(activeUser.getUsername() + " is back in openManagerMenu().");
 
-				break managerLoop;
+				break;
 			case 3:
 				// TODO: Refund an order
 				break;
