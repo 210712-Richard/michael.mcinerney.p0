@@ -94,7 +94,7 @@ public class UserDAO {
 	 * @param username The username to check
 	 * @return true if the username is unique. false otherwise
 	 */
-	public boolean checkUsername(String username) {
+	public Boolean checkUsername(String username) {
 		log.trace("App has entered checkUsername.");
 		log.debug("checkUsername Parameters: username: " + username);
 		for (User user : users) { //Iterate through the list of users.

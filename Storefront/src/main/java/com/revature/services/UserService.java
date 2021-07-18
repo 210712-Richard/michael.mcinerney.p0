@@ -65,7 +65,7 @@ public class UserService {
 	 * @param username The username the user wants to register with
 	 * @return false if the username has already been registers, true otherwise
 	 */
-	public boolean isUsernameUnique(String username) {
+	public Boolean isUsernameUnique(String username) {
 		log.trace("App has entered isUsernameUnique.");
 		log.debug("isUsernameUnique Parameters: username: " + username);
 		if(username == null || username.isBlank() ) { //If the username entered was null or blank.
@@ -87,6 +87,9 @@ public class UserService {
 	 * @return
 	 */
 	public User changeUserDetails(User user) {
+		if (user == null) {
+			return null;
+		}
 		log.trace("App has entered changeUserDetails.");
 		log.debug("isUsernameUnique Parameters: user: " + user);
 		ud.writeToFile(); //Save the file.
