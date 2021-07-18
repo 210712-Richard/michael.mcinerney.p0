@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -21,7 +22,13 @@ public class UserServiceTest {
 	private UserService service = null;
 	private User user = null;
 	private UserDAO dao = null;
-
+	
+	private static MockitoHelper<UserDAO> mockHelper; //Sets up a Mock UserDAO for UserService for method verification.
+	
+	@BeforeAll
+	public static void beforeStart() {
+		mockHelper = new MockitoHelper<UserDAO>(UserDAO.class);
+	}
 	@BeforeEach
 	public void beforeTests() {
 		service = new UserService();
@@ -47,7 +54,7 @@ public class UserServiceTest {
 
 	@Test
 	public void testIsUsernameUniqueCallsMethods() {
-		dao = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "ud");
+		dao = mockHelper.setPrivateMock(service, "ud");
 		String username = "Test";
 		service.isUsernameUnique(username);
 
@@ -80,7 +87,7 @@ public class UserServiceTest {
 
 	@Test
 	public void testLoginCallsMethods() {
-		dao = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "ud");
+		dao = mockHelper.setPrivateMock(service, "ud");
 		String username = "DefaultUser";
 		String password = "DefaultPassword";
 
@@ -117,7 +124,7 @@ public class UserServiceTest {
 
 	@Test
 	public void testChangeUserDetails() {
-		dao = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "ud");
+		dao = mockHelper.setPrivateMock(service, "ud");
 		User savedUser = service.changeUserDetails(user);
 		User nullUser = service.changeUserDetails(null);
 
@@ -193,7 +200,7 @@ public class UserServiceTest {
 	@Test
 	public void testRegisterReturnsCallsFunctions() {
 		// Tests making sure method calls UserDAO methods
-		dao = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "ud");
+		dao = mockHelper.setPrivateMock(service, "ud");
 
 		service.register(user.getUsername(), user.getPassword(), user.getEmail(), user.getAccountType());
 
@@ -251,7 +258,7 @@ public class UserServiceTest {
 	@Test
 	public void testSearchUserByNameReturnsCallsFunctions() {
 		// Tests making sure method calls UserDAO methods
-		dao = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "ud");
+		dao = mockHelper.setPrivateMock(service, "ud");
 
 		service.searchUserByName(user.getUsername(), user.getAccountType(), user.isActive());
 

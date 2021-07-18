@@ -18,19 +18,14 @@ public class UserService {
 
 	 /**
 	  * Allows the user to login by making sure their username and password combination is correct.
-	  * @param username
-	  * @param password
+	  * @param username The username of the user trying to login.
+	  * @param password The password of the user trying to login.
 	  * @return The user that has the same username and password. Null otherwise.
 	  */
 	public User login(String username, String password) {
 		log.trace("App has entered login.");
 		log.debug("login Parameters: username: " + username + ", password: " + password);
-		if (username == null || password == null || username.isBlank() || password.isBlank()) { //if either the username or password is null or blank
-			log.warn("The username and/or password is null or empty");
-			log.trace("App is leaving login");
-			log.debug("login is returning " + null);
-			return null;
-		}
+		
 		User u = ud.getUser(username, password); //Retrieve the user from the 
 		log.trace("App has returned to login.");
 		ud.writeToFile();
@@ -68,10 +63,6 @@ public class UserService {
 	public Boolean isUsernameUnique(String username) {
 		log.trace("App has entered isUsernameUnique.");
 		log.debug("isUsernameUnique Parameters: username: " + username);
-		if(username == null || username.isBlank() ) { //If the username entered was null or blank.
-			log.warn("User entered a null or blank username");
-			return false;
-		}
 		boolean isUnique = ud.checkUsername(username); //Check the DAO to see if username is taken
 		log.trace("App has returned to isUsernameUnique.");
 		ud.writeToFile(); //Save the file

@@ -52,10 +52,16 @@ public class UserDAO {
 	public User getUser(String username, String password) {
 		log.trace("App has entered getUser.");
 		log.debug("getUser Parameters: username: " + username + ", password: " + password);
+		// if either the username or password is null or blank
+		if (username == null || password == null) {
+			log.warn("The username and/or password is null or empty");
+			log.trace("App is leaving getUser");
+			log.debug("getUser is returning " + null);
+			return null;
+		}
 		for (User u : users) { // Iterate through each User
-			if (username.equals(u.getUsername()) && password.equals(u.getPassword())) { // If the username and password
-																						// of a User is the same as the
-																						// parameters
+			// If the username and password of a User is the same as the parameters
+			if (username.equals(u.getUsername()) && password.equals(u.getPassword())) {
 				log.trace("App is now leaving getUser.");
 				log.debug("getUser is returning User: " + u);
 				return u; // Return the correct User
@@ -63,7 +69,7 @@ public class UserDAO {
 		}
 		log.trace("App is now leaving getUser.");
 		log.debug("getUser is returning User: " + null);
-		return null; // Only returns null if no matching user was found.
+		return null; // Returns null if no matching user was found.
 	}
 
 	/**
@@ -110,16 +116,22 @@ public class UserDAO {
 	public Boolean checkUsername(String username) {
 		log.trace("App has entered checkUsername.");
 		log.debug("checkUsername Parameters: username: " + username);
+		if (username == null || username.isBlank()) { // If the username entered was null or blank.
+			log.warn("User entered a null or blank username");
+			log.trace("App is leaving checkUsername.");
+			log.debug("App is returning Boolean: " + false);
+			return false;
+		}
 		for (User user : users) { // Iterate through the list of users.
 			if (username.equals(user.getUsername())) { // If the username has been taken
 				log.debug(username + " has been found: " + user.getUsername());
 				log.trace("App is now leaving checkUsername.");
-				log.debug("checkUsername is returning boolean: " + false);
+				log.debug("checkUsername is returning Boolean: " + false);
 				return false;
 			}
 		}
 		log.trace("App is now leaving checkUsername.");
-		log.debug("checkUsername is returning boolean: " + true);
+		log.debug("checkUsername is returning Boolean: " + true);
 		return true; // Means the username is unique
 	}
 
