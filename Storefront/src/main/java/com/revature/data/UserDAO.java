@@ -7,15 +7,15 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.revature.models.AccountType;
-import com.revature.models.User;
+import com.revature.beans.AccountType;
+import com.revature.beans.User;
 
 public class UserDAO {
 	public static List<User> users; // List of all the users
 
 	private static String filename = "users.dat"; // Name of the file where the users are stored at.
 
-	private static final Logger log = LogManager.getLogger(UserDAO.class); // Used to create log
+	private static final Logger log = LogManager.getLogger(UserDAO.class); // Used to create logs
 
 	/**
 	 * static block that loads the file, or populates the array with default

@@ -1,4 +1,4 @@
-package com.revature.models;
+package com.revature.beans;
 
 /**
  * Is the category that the item belongs to.

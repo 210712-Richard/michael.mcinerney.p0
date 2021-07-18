@@ -1,4 +1,4 @@
-package com.revature.models;
+package com.revature.beans;
 
 /**
  * The type of the account the user has

@@ -1,4 +1,4 @@
-package com.revature.models;
+package com.revature.beans;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -9,6 +9,7 @@ public class Item implements Serializable{
 	private int amountInInventory;
 	private ItemCategory category;
 	private String description;
+	private Sale sale;
 	
 	public Item(int id, String name, int amountInInventory, ItemCategory category, String description) {
 		super();

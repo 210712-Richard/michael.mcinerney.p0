@@ -6,8 +6,8 @@ import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.revature.models.AccountType;
-import com.revature.models.User;
+import com.revature.beans.AccountType;
+import com.revature.beans.User;
 import com.revature.services.UserService;
 import com.revature.util.SingletonScanner;
 
@@ -124,7 +124,7 @@ public class MainMenu {
 				// TODO: View, edit, and checkout cart
 				break;
 			case 3:
-				// TODO: Add ability to edit password and email
+				// Edit Account Details (email, password, or active status)
 				openCustomerSettings();
 				log.trace(
 						((activeUser == null) ? "User" : activeUser.getUsername()) + " is back in openCustomerMenu().");

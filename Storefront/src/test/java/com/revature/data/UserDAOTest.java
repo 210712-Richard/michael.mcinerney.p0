@@ -11,8 +11,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.revature.models.AccountType;
-import com.revature.models.User;
+import com.revature.beans.AccountType;
+import com.revature.beans.User;
 
 public class UserDAOTest {
 
