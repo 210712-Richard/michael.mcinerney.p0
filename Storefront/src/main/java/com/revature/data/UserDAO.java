@@ -11,7 +11,7 @@ import com.revature.beans.AccountType;
 import com.revature.beans.User;
 
 public class UserDAO {
-	public static List<User> users; // List of all the users
+	private static List<User> users; // List of all the users
 
 	private static String filename = "users.dat"; // Name of the file where the users are stored at.
 

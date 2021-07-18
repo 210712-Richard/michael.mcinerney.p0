@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.revature.beans.AccountType;
 import com.revature.beans.User;
@@ -124,7 +125,7 @@ public class UserDAOTest {
 		// type and status.
 		List<User> retList = dao.findUsersByName(user.getUsername(), user.getAccountType(), user.isActive());
 		assertFalse(retList.isEmpty(), "Assert that users are returned even if part of username is passed in.");
-
+		
 		// Ensure empty string returns list of users
 		retList = dao.findUsersByName("", user.getAccountType(), user.isActive());
 		assertFalse(retList.isEmpty(), "Assert that users are returned even if blank username is passed.");

@@ -71,6 +71,9 @@ public class User implements Serializable{
 		return accountType;
 	}
 	public void setAccountType(AccountType accountType) {
+		if (accountType == null) {
+			return;
+		}
 		this.accountType = accountType;
 	}
 	public boolean isActive() {

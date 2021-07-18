@@ -6,15 +6,21 @@ import java.util.Objects;
 public class Item implements Serializable{
 	private int id;
 	private String name;
+	private double price;
 	private int amountInInventory;
 	private ItemCategory category;
 	private String description;
 	private Sale sale;
 	
-	public Item(int id, String name, int amountInInventory, ItemCategory category, String description) {
+	public Item() {
 		super();
+		sale = null;
+	}
+	public Item(int id, String name, double price, int amountInInventory, ItemCategory category, String description) {
+		this();
 		this.id = id;
 		this.name = name;
+		this.price = price;
 		this.amountInInventory = amountInInventory;
 		this.category = category;
 		this.description = description;
@@ -36,11 +42,33 @@ public class Item implements Serializable{
 		this.name = name;
 	}
 
+	public double getPrice() {
+		return price;
+	}
+
+	public void setPrice(double price) {
+		if (price <= 0.00) {
+			return;
+		}
+		this.price = price;
+	}
+
+	public Sale getSale() {
+		return sale;
+	}
+
+	public void setSale(Sale sale) {
+		this.sale = sale;
+	}
+
 	public int getAmountInInventory() {
 		return amountInInventory;
 	}
 
 	public void setAmountInInventory(int amountInInventory) {
+		if(amountInInventory < 0) {
+			return;
+		}
 		this.amountInInventory = amountInInventory;
 	}
 
@@ -49,6 +77,9 @@ public class Item implements Serializable{
 	}
 
 	public void setCategory(ItemCategory category) {
+		if (category == null) {
+			return;
+		}
 		this.category = category;
 	}
 

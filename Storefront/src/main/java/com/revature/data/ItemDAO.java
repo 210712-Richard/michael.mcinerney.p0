@@ -30,18 +30,18 @@ public class ItemDAO {
 		}
 		if (inventory == null) { //If no inventory was found.
 			inventory = new ArrayList<Item>();
-			inventory.add(new Item(inventory.size(), "PC Desktop", 5, ItemCategory.DESKTOP_COMPUTER,
+			inventory.add(new Item(inventory.size(), "PC Desktop", 2000.00, 5, ItemCategory.DESKTOP_COMPUTER,
 					"A Windows 10 personal computer."));
-			inventory.add(new Item(inventory.size(), "Mac Desktop", 0, ItemCategory.DESKTOP_COMPUTER,
-					"A Windows 10 personal computer."));
-			inventory.add(new Item(inventory.size(), "MacBook", 5, ItemCategory.LAPTOP_COMPUTER, "An Apple laptop."));
-			inventory.add(new Item(inventory.size(), "Mechanical Keyboard", 5, ItemCategory.COMPUTER_ACCESSORY,
+			inventory.add(new Item(inventory.size(), "Mac Desktop", 1000.00, 0, ItemCategory.DESKTOP_COMPUTER,
+					"An Apple Desktop."));
+			inventory.add(new Item(inventory.size(), "MacBook", 1500.00, 5,  ItemCategory.LAPTOP_COMPUTER, "An Apple laptop."));
+			inventory.add(new Item(inventory.size(), "Mechanical Keyboard", 150.00, 5, ItemCategory.COMPUTER_ACCESSORY,
 					"A heavy-duty keyboard."));
-			inventory.add(new Item(inventory.size(), "1TB External HDD", 5, ItemCategory.STORAGE_DEVICE,
+			inventory.add(new Item(inventory.size(), "1TB External HDD", 80.00, 5, ItemCategory.STORAGE_DEVICE,
 					"A portable hard drive with 1 TB in it."));
-			inventory.add(new Item(inventory.size(), "144Hz 32\" Monitor", 5, ItemCategory.MONITOR,
+			inventory.add(new Item(inventory.size(), "144Hz 32\" Monitor", 130.00, 5, ItemCategory.MONITOR,
 					"A 32-inch monitor that runs up to 144 FPS."));
-			inventory.add(new Item(inventory.size(), "Windows 10 Home Edition", 5, ItemCategory.SOFTWARE,
+			inventory.add(new Item(inventory.size(), "Windows 10 Home Edition", 90.00, 5, ItemCategory.SOFTWARE,
 					"A copy of Windows 10 for home computers."));
 		}
 	}
@@ -69,12 +69,14 @@ public class ItemDAO {
 		log.trace("App has entered getItems.");
 		log.debug("getItems Parameters: category: " + category + ", onlyInStock: " + onlyInStock);
 		ArrayList<Item> retList = new ArrayList<Item>(); // Initialize a new list to return.
-		for (Item item : inventory) { // Loop through each item in the inventory
-			// If the item belongs to the correct category and is either in stock or
-			// onlyInStock is false.
-			if (item.getCategory() == category && (!onlyInStock || item.getAmountInInventory() > 0)) {
-				log.debug("Item added to list: " + item);
-				retList.add(item); // Add the item to the return list.
+		if (category != null) { //If the category passed in is null.
+			for (Item item : inventory) { // Loop through each item in the inventory
+				// If the item belongs to the correct category and is either in stock or
+				// onlyInStock is false.
+				if (item.getCategory() == category && (!onlyInStock || item.getAmountInInventory() > 0)) {
+					log.debug("Item added to list: " + item);
+					retList.add(item); // Add the item to the return list.
+				}
 			}
 		}
 		log.trace("App is exiting getItems.");
@@ -89,5 +91,24 @@ public class ItemDAO {
 		log.trace("App has entered writeToFile.");
 		new Serializer<Item>().writeObjectsToFile(inventory, filename);
 		log.trace("App is exiting writeToFile");
+	}
+
+	public Boolean addItem(Item item) {
+		log.trace("App has entered addItem.");
+		log.debug("addItem parameters: item: " + item);
+		if (item == null) { //If item is null, return false.
+			log.warn("App tried to enter a null Item.");
+			log.trace("App is now exiting addItem.");
+			log.debug("addItem is returning Boolean: " + false);
+			return false;
+		}
+		item.setId(inventory.size());
+		log.debug("Parameter item has changed to :" + item);
+		inventory.add(item);
+		log.debug("Inventory list has correctly added the item to the list: " + inventory.contains(item));
+		log.trace("App is now exiting addItem.");
+		log.debug("addItem is returning Boolean: " + true);
+		return true;
+		
 	}
 }
