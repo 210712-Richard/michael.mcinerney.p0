@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.revature.beans.AccountType;
+import com.revature.beans.User;
 import com.revature.data.UserDAO;
-import com.revature.models.AccountType;
-import com.revature.models.User;
 import com.revature.util.MockitoHelper;
 
 public class UserServiceTest {
@@ -198,7 +198,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testRegisterReturnsCallsFunctions() {
+	public void testRegisterReturnsCallsMethods() {
 		// Tests making sure method calls UserDAO methods
 		dao = mockHelper.setPrivateMock(service, "ud");
 
