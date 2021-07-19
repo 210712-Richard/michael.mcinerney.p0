@@ -3,6 +3,7 @@ package com.revature.data;
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class ItemDAOTest {
 		inv = mock.setPrivateMock(dao, "inventory");
 		// Create the Item object and add it to the list.
 		Item i = new Item(-1, "TestAddItem", 20.00, 10, ItemCategory.COMPUTER_ACCESSORY, "This is a test.");
-		Boolean isAdded = dao.addItem(i);
+		Item isAdded = dao.addItem(i);
 
 		// Verify size and add were called.
 		ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
@@ -80,11 +81,13 @@ public class ItemDAOTest {
 				"Assert that the item added has the same description.");
 		assertNull("Assert that there is no sale added to the item.", capture.getSale());
 
-		// Make sure a successful add returns true.
-		assertTrue(isAdded, "Assert that the method returns true upon success.");
+		// Make sure a successful add returns item.
+		assertNotNull(isAdded, "Assert that the method returns true upon success.");
 
-		// If the item added was null, it should return false.
-		assertFalse(dao.addItem(null));
+		// If the item added was null, it should return null.
+		assertNull("Assert that null item returns null", dao.addItem(null));
+		
+		
 
 	}
 }

@@ -198,7 +198,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testRegisterReturnsCallsFunctions() {
+	public void testRegisterReturnsCallsMethods() {
 		// Tests making sure method calls UserDAO methods
 		dao = mockHelper.setPrivateMock(service, "ud");
 

@@ -93,22 +93,22 @@ public class ItemDAO {
 		log.trace("App is exiting writeToFile");
 	}
 
-	public Boolean addItem(Item item) {
+	public Item addItem(Item item) {
 		log.trace("App has entered addItem.");
 		log.debug("addItem parameters: item: " + item);
 		if (item == null) { //If item is null, return false.
 			log.warn("App tried to enter a null Item.");
 			log.trace("App is now exiting addItem.");
-			log.debug("addItem is returning Boolean: " + false);
-			return false;
+			log.debug("addItem is returning Item: " + null);
+			return null;
 		}
 		item.setId(inventory.size());
 		log.debug("Parameter item has changed to :" + item);
 		inventory.add(item);
 		log.debug("Inventory list has correctly added the item to the list: " + inventory.contains(item));
 		log.trace("App is now exiting addItem.");
-		log.debug("addItem is returning Boolean: " + true);
-		return true;
+		log.debug("addItem is returning Item: " + item);
+		return item;
 		
 	}
 }

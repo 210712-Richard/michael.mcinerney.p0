@@ -22,6 +22,9 @@ public class Item implements Serializable{
 		this.name = name;
 		this.price = price;
 		this.amountInInventory = amountInInventory;
+		if (amountInInventory < 0) {
+			this.amountInInventory = 0;
+		}
 		this.category = category;
 		this.description = description;
 	}
