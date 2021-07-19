@@ -13,7 +13,7 @@ public class Serializer <T>{
 		List<T> objects = null;
 		
 		try(ObjectInputStream o = new ObjectInputStream(new FileInputStream(filename));){
-			objects = (ArrayList<T>) o.readObject();
+			objects = (List<T>) o.readObject();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

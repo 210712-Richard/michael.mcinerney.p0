@@ -1,6 +1,7 @@
 package com.revature.beans;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -82,7 +83,15 @@ public class User implements Serializable{
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
-
+	
+	public void addToCart(Item item, int quantity) {
+		cart.add(new CartItem(item, quantity));
+	}
+	
+	public void createOrder() {
+		pastOrders.add(new Order(cart, LocalDate.now()));
+		cart = new ArrayList<CartItem>(); //Get rid of the items in the cart since it has been ordered.
+	}
 	@Override
 	public int hashCode() {
 		return Objects.hash(accountType, cart, email, id, isActive, password, pastOrders, username);

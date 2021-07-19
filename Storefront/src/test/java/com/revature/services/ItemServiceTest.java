@@ -103,7 +103,7 @@ public class ItemServiceTest {
 		assertEquals(i.getPrice(), price, "Assert that price remains the same.");
 		assertEquals(i.getAmountInInventory(), amount, "Assert that amount remains the same.");
 		assertEquals(i.getCategory(), category, "Assert that the category remains the same.");
-		assertEquals(i.getDescription(), desc, "Asser that the description remains the same.");
+		assertEquals(i.getDescription(), desc, "Assert that the description remains the same.");
 		assertNull("Assert that the sale object is null.", i.getSale());
 		
 
@@ -162,7 +162,7 @@ public class ItemServiceTest {
 		assertEquals(i.getPrice(), price, "Assert that price remains the same.");
 		assertEquals(i.getAmountInInventory(), amount, "Assert that amount remains the same.");
 		assertEquals(i.getCategory(), category, "Assert that the category remains the same.");
-		assertEquals(i.getDescription(), desc, "Asser that the description remains the same.");
+		assertEquals(i.getDescription(), desc, "Assert that the description remains the same.");
 
 	}
 
