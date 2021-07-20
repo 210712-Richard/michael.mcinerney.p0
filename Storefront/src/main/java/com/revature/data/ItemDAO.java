@@ -1,15 +1,14 @@
 package com.revature.data;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.revature.beans.AccountType;
 import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
-import com.revature.beans.User;
 
 public class ItemDAO {
 	private static List<Item> inventory;
@@ -44,6 +43,11 @@ public class ItemDAO {
 			inventory.add(new Item(inventory.size(), "Windows 10 Home Edition", 90.00, 5, ItemCategory.SOFTWARE,
 					"A copy of Windows 10 for home computers."));
 		}
+		
+		//This will loop through each item, and if the sale is past, set the Sale to null
+		inventory.stream()
+		.filter((i)->i.getSale() != null && i.getSale().getEndDate().isBefore(LocalDate.now()))
+		.forEach((i)->i.setSale(null));
 	}
 
 	/**

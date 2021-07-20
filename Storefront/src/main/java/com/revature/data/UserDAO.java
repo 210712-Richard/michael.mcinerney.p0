@@ -1,5 +1,6 @@
 package com.revature.data;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +40,8 @@ public class UserDAO {
 			users.add(new User(users.size(), "badUser", "pass", "bad@user.com", AccountType.CUSTOMER, false));
 			log.debug("Initialized list of default users: " + users);
 		}
+
+		checkSalesInCarts();
 	}
 
 	/**
@@ -69,6 +72,37 @@ public class UserDAO {
 		log.trace("App is now leaving getUser.");
 		log.debug("getUser is returning User: " + null);
 		return null; // Returns null if no matching user was found.
+	}
+
+	public static void checkSalesInCarts() {
+		log.trace("App is now in checkSalesInCarts");
+		users.stream()
+				.filter((u) -> u.getCart() != null) // Filter through all users with a cart
+				.forEach((u) -> { // Loop through the filtered users
+					u.getCart().stream() // Get a stream for the user cart
+							.filter((c) -> c.getItem().getPrice() != c.getPrice()) // Filter through each item with a
+																					// different price in the cart
+							.forEach((c) -> {
+								// If the sale has past its endDate or if the sale was removed
+								if (c.getItem().getSale() == null
+										|| c.getItem().getSale().getEndDate().isBefore(LocalDate.now())) {
+									log.debug(
+											u.getUsername() + " has item " + c.getItem().getName() + " being changed.");
+									c.getItem().setSale(null); // Set the sale to null
+									log.debug("Item in CartItem has been set to " + c.getItem().getSale());
+									c.setPrice(c.getItem().getPrice()); // Set the price in the cart to the item's
+																		// actual price
+									log.debug("CartItem price has been set to " + c.getPrice());
+								}
+								// This means the sale price was not set to the items in the cart yet
+								else {
+									// Set the price in the cart to the item's sale price
+									c.setPrice(c.getItem().getSale().getSalePrice());
+									log.debug("CartItem price has been set to " + c.getPrice());
+								}
+							});
+				});
+		log.trace("App is now exiting checkSalesInCarts");
 	}
 
 	/**
@@ -106,7 +140,6 @@ public class UserDAO {
 		return newUser;
 	}
 
-
 	/**
 	 * Searches for a User by username, account type, and active status
 	 * 
@@ -139,6 +172,7 @@ public class UserDAO {
 
 	/**
 	 * Get the list of users
+	 * 
 	 * @return The list of users
 	 */
 	public List<User> getUsers() {

@@ -1,8 +1,10 @@
 package com.revature.menus;
 
-import java.time.chrono.IsoChronology;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -146,7 +148,14 @@ public class Menu {
 							is.updateItem(item);
 							log.trace(activeUser.getUsername() + " is back in openCustomerMenu");
 							log.debug("item quantity set to " + item.getAmountInInventory());
-							activeUser.addToCart(item, quantity);
+							double price = item.getPrice();
+							log.debug("price set to " + price);
+							// Check to see if the item is on sale
+							if (item.getSale() != null) {
+								price = item.getSale().getSalePrice();
+								log.debug("price set to " + price);
+							}
+							activeUser.addToCart(item, quantity, price);
 							activeUser = us.updateUser(activeUser);
 
 						}
@@ -292,10 +301,10 @@ public class Menu {
 			String print = isOrderList ? "\t" : Integer.toString(i + 1) + ". ";
 			String extraTab = isOrderList ? "\t" : ""; // Add an extra tab for formatting.
 			System.out.println("\t" + print + cartItem.getItem().getName());
-			System.out.println(extraTab + "\tUnit Price: $" + cartItem.getItem().getPrice());
+			System.out.println(extraTab + "\tUnit Price: $" + cartItem.getPrice());
 			System.out.println(extraTab + "\tQuantity In Cart: " + cartItem.getQuantity() + "\n");
 
-			total += cartItem.getItem().getPrice() * cartItem.getQuantity(); // Add to the total
+			total += cartItem.getPrice() * cartItem.getQuantity(); // Add to the total
 			log.debug("Current total of the cart: " + total);
 		} // Printing the total
 		System.out.println("Total: $" + total);
@@ -333,9 +342,15 @@ public class Menu {
 				for (int i = 0; i < itemList.size(); i++) { // Loop through the returned list
 					Item item = itemList.get(i);
 					System.out.println("\t" + Integer.toString(i + 1) + ". " + item.getName());
+
+					// If there is a sale for this item right now
+					String priceString = "Price: $" + item.getPrice();
+					if (item.getSale() != null) {
+						priceString = "SALE! (ends " + item.getSale().getEndDate() + ") Sale Price: $"
+								+ item.getSale().getSalePrice();
+					}
 					// Print the price and amount in stock
-					System.out.println(
-							"\t\tPrice: $" + item.getPrice() + " Amount In Stock: " + item.getAmountInInventory());
+					System.out.println("\t\t" + priceString + " Amount In Stock: " + item.getAmountInInventory());
 					System.out.println("\t\t" + item.getDescription()); // Print the description
 					System.out.println(""); // New line to seperate items.
 				}
@@ -493,7 +508,7 @@ public class Menu {
 				// Refund an order
 				User user = searchUsernameMenu(AccountType.CUSTOMER, false); // Search for the user
 				log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
-				if (user != null) { //The user selected a valid User
+				if (user != null) { // The user selected a valid User
 					orderEditMenu(user.getPastOrders(), OrderStatus.REFUNDED); // Find the order to refund
 					log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
 				}
@@ -530,8 +545,9 @@ public class Menu {
 			System.out.println("Edit Inventory Menu.");
 			System.out.println("Please select if you want to add a new item or edit an existing item's quantity: ");
 			System.out.println("\t1. Add Item");
-			System.out.println("\t2. Edit Exisiting Item Quantity");
-			System.out.println("\t3. Back");
+			System.out.println("\t2. Add or Remove Sale");
+			System.out.println("\t3. Edit Exisiting Item Quantity");
+			System.out.println("\t4. Back");
 			int selection = getUserInput();
 			log.trace(activeUser.getUsername() + " has returned to editInventoryMenu");
 			switch (selection) {
@@ -561,16 +577,8 @@ public class Menu {
 
 				// Enter the price of the item
 				System.out.println("Please enter the price of the item: ");
-				Double newPrice = 0.0;
-
-				try {
-					newPrice = Double.parseDouble(scanner.nextLine());
-					log.debug(activeUser.getUsername() + " has entered newPrice " + newPrice);
-				} catch (Exception e) { // The user tried to enter a non-double number.
-					log.warn("User inputted an invalid value.");
-					newPrice = 0.0; // This sets the price back to zero
-					log.debug("newPrice has been set to " + newPrice);
-				}
+				double newPrice = getUserDouble();
+				log.trace(activeUser.getUsername() + " is back in editInventoryMenu");
 
 				// Enter the quantity of the item
 				System.out.println("Please enter the amount of the item in inventory: ");
@@ -595,9 +603,74 @@ public class Menu {
 				log.debug("newItem is now: " + newItem);
 				System.out.println("Item Added!\n");
 				break;
-
 			case 2:
+				// Add or remove sale
+				System.out.println("Add or Remove Sale");
+
+				// Get the item to add a sale to
+				Item saleItem = searchItemMenu(false);
+				log.debug(activeUser.getUsername() + " selected saleItem " + saleItem);
+				if (saleItem == null) {
+					break;
+				}
+				if (saleItem.getSale() != null) {
+					System.out.println("That item has a sale already. Do you want to end the sale now?");
+					System.out.println("\t1. Yes");
+					System.out.println("\t2. No");
+					int affirm = getUserInput();
+					switch (affirm) {
+					case 1:
+						//The user wants to end the sale
+						System.out.println("Ending the sale...");
+						saleItem.setSale(null);
+						log.debug("saleItem sale has been set to " + saleItem.getSale());
+						System.out.println("The sale has ended.");
+						us.updateSalesInCarts();
+						log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+						continue editLoop;
+					default:
+						//Invalid input or the user does not want to end the sale.
+						System.out.println("No sale was modified");
+					}
+				}
+				// Enter the price of the item during the sale
+				System.out.println("Please enter the price would like for " + saleItem.getName() + " for the sale?");
+				double salePrice = getUserDouble();
+				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+				
+				// Price cannot be 0 or less or be greater than the item's current price
+				if (salePrice <= 0.0 || salePrice >= saleItem.getPrice()) { 
+					log.warn(activeUser.getUsername() + " tried to enter an invalid price.");
+					System.out.println("Invalid price. Please make sure price is greater than 0 and less than the item's normal price.");
+					break;
+				}
+
+				// The final date of the sale
+				System.out.println("Please enter the final date of the sale.");
+				System.out.println("Format for the date: MM/DD/YYYY");
+				List<Integer> dateList = Stream.of(scanner.nextLine().split("/")).map((str) -> Integer.parseInt(str))
+						.collect(Collectors.toList());
+				log.debug(activeUser.getUsername() + " has entered " + dateList);
+				LocalDate finalDate = LocalDate.of(dateList.get(2), dateList.get(1), dateList.get(0));
+				log.debug("finalDate is " + finalDate);
+				if (finalDate.isBefore(LocalDate.now())) {
+					System.out.println("That date has already past. Please try again.");
+					log.debug("Is finalDate after current date?: " + finalDate.isBefore(LocalDate.now()));
+					break;
+				}
+				// Add the sale to the item
+				System.out.println("Adding the sale...");
+				saleItem.setSale(finalDate, salePrice);
+				log.debug("saleItem has sale " + saleItem.getSale());
+				saleItem = is.updateItem(saleItem);
+				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+				us.updateSalesInCarts();
+				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+				System.out.println("The sale has been added!");
+				break;
+			case 3:
 				// Edit Existing Item Amount
+				System.out.println("Edit Inventory Amount");
 				Item item = searchItemMenu(false);
 				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
 				if (item == null) { // User wanted to go back
@@ -620,7 +693,7 @@ public class Menu {
 					System.out.println("Invalid input. Please try again.");
 					break;
 				}
-			case 3:
+			case 4:
 				// Go back
 				break editLoop;
 			default:
@@ -1058,5 +1131,21 @@ public class Menu {
 		log.trace(((activeUser == null) ? "User" : activeUser.getUsername()) + " is exiting searchUsernameMenu.");
 		log.debug("searchUsernameMenu is returning User: " + selectedUser);
 		return selectedUser;
+	}
+
+	private static double getUserDouble() {
+		log.trace("User is now in getUserDouble");
+		double userInput;
+		try {
+			userInput = Double.parseDouble(scanner.nextLine());
+		} catch (Exception e) {
+			log.warn("User inputted an invalid value.");
+			userInput = 0.0;
+		}
+		System.out.println(); // Puts in a linebreak.
+		log.trace(((activeUser == null) ? "User" : activeUser.getUsername()) + " is exiting getUserDouble.");
+		log.debug(((activeUser == null) ? "User" : activeUser.getUsername()) + " inputted " + userInput);
+		return userInput;
+
 	}
 }
