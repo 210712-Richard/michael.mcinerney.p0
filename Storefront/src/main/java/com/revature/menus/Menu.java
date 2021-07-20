@@ -1,5 +1,6 @@
 package com.revature.menus;
 
+import java.time.chrono.IsoChronology;
 import java.util.List;
 import java.util.Scanner;
 
@@ -146,7 +147,7 @@ public class Menu {
 							log.trace(activeUser.getUsername() + " is back in openCustomerMenu");
 							log.debug("item quantity set to " + item.getAmountInInventory());
 							activeUser.addToCart(item, quantity);
-							activeUser = us.changeUserDetails(activeUser);
+							activeUser = us.updateUser(activeUser);
 
 						}
 						// If the quantity is zero, it will just leave the loop
@@ -166,14 +167,14 @@ public class Menu {
 				System.out.println("Here is the cart.");
 				customerCartMenu();
 				log.trace(activeUser.getUsername() + " has returned to openCustomerMenu");
-				activeUser = us.changeUserDetails(activeUser);
+				activeUser = us.updateUser(activeUser);
 				break;
 			case 3:
 				// View and edit orders
 				System.out.println("Here are you orders: ");
 				orderEditMenu(activeUser.getPastOrders(), OrderStatus.CANCELLED);
 				log.trace(activeUser.getUsername() + " has returned to openCustomerMenu");
-				activeUser = us.changeUserDetails(activeUser);
+				activeUser = us.updateUser(activeUser);
 				log.trace(activeUser.getUsername() + " has returned to openCustomerMenu");
 				break;
 			case 4:
@@ -492,8 +493,11 @@ public class Menu {
 				// Refund an order
 				User user = searchUsernameMenu(AccountType.CUSTOMER, false); // Search for the user
 				log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
-				orderEditMenu(user.getPastOrders(), OrderStatus.REFUNDED); // Find the order to refund
-				log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
+				if (user != null) { //The user selected a valid User
+					orderEditMenu(user.getPastOrders(), OrderStatus.REFUNDED); // Find the order to refund
+					log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
+				}
+
 				break;
 			case 4:
 				// Edit Password for Managers
@@ -522,7 +526,7 @@ public class Menu {
 		log.trace(activeUser.getUsername() + " has entered editInventoryMenu.");
 		// Users selects if they want to add item or edit item quantity
 		editLoop: while (true) {
-			
+
 			System.out.println("Edit Inventory Menu.");
 			System.out.println("Please select if you want to add a new item or edit an existing item's quantity: ");
 			System.out.println("\t1. Add Item");
@@ -533,23 +537,76 @@ public class Menu {
 			switch (selection) {
 			case 1:
 				// Add Item
-
+				System.out.println("Add Item");
 				// Have the user input the name, price, category, amount, and description.
 				System.out.println("Please select the category of the item: ");
-				ItemCategory category = categoryMenu();
+
+				// Enter the category
+				ItemCategory newCategory = categoryMenu();
 				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
-				log.debug("category selected: " + category);
-				if (category == null) { //The user selected to go back
-					
-					break editLoop;
+				log.debug("category selected: " + newCategory);
+				if (newCategory == null) { // The user selected to go back
+					break;
 				}
+
+				// Enter the name of the item
+				System.out.println("Please enter the name of the item: ");
+				String newName = scanner.nextLine();
+				log.debug(activeUser.getUsername() + " has entered newName " + newName);
+
+				// Enter the description of the item
+				System.out.println("Please enter a description the item: ");
+				String newDesc = scanner.nextLine();
+				log.debug(activeUser.getUsername() + " has entered newName " + newDesc);
+
+				// Enter the price of the item
+				System.out.println("Please enter the price of the item: ");
+				Double newPrice = 0.0;
+
+				try {
+					newPrice = Double.parseDouble(scanner.nextLine());
+					log.debug(activeUser.getUsername() + " has entered newPrice " + newPrice);
+				} catch (Exception e) { // The user tried to enter a non-double number.
+					log.warn("User inputted an invalid value.");
+					newPrice = 0.0; // This sets the price back to zero
+					log.debug("newPrice has been set to " + newPrice);
+				}
+
+				// Enter the quantity of the item
+				System.out.println("Please enter the amount of the item in inventory: ");
+				int newAmount = getUserInput();
+				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+				log.debug(activeUser.getUsername() + " has entered newAmount " + newAmount);
+
+				// Add the item to inventory
+				System.out.println("Adding item to inventory...");
+				Item newItem = is.addItem(newName, newPrice, newAmount, newCategory, newDesc);
+				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+
+				if (newItem == null) { // The item entered had at least one bad parameter
+					log.warn("The new item was not added. One of the parameters was wrong");
+					System.out.println("There was an error with an input. Please try again.");
+					break;
+				}
+
+				// Save the file and go back to the last menu
+				newItem = is.updateItem(newItem);
+				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+				log.debug("newItem is now: " + newItem);
+				System.out.println("Item Added!\n");
+				break;
+
 			case 2:
 				// Edit Existing Item Amount
 				Item item = searchItemMenu(false);
 				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+				if (item == null) { // User wanted to go back
+					log.info(activeUser.getUsername() + " is going back.");
+					break;
+				}
 				System.out.println("Please enter the new quantity of " + item.getName() + " in inventory: ");
 				int newQuantity = getUserInput();
-				if (newQuantity > 0) { //The user entered a positive or 0 quantity
+				if (newQuantity > 0) { // The user entered a positive or 0 quantity
 					log.info("Item quantity is being changed.");
 					item.setAmountInInventory(newQuantity);
 					log.debug("item amountInInventory changed to " + item.getAmountInInventory());
@@ -558,17 +615,16 @@ public class Menu {
 					log.debug("item has been set to " + item);
 					System.out.println(item.getName() + " amount is now " + item.getAmountInInventory());
 					break editLoop;
-				}
-				else {
+				} else {
 					log.info(activeUser.getUsername() + " entered an invalid quantity.");
 					System.out.println("Invalid input. Please try again.");
 					break;
 				}
 			case 3:
-				//Go back
+				// Go back
 				break editLoop;
 			default:
-				//Invalid Input
+				// Invalid Input
 				log.warn(activeUser.getUsername() + " entered invalid input " + selection);
 				System.out.println("Invalid input. Please try again.");
 				break;
@@ -775,7 +831,7 @@ public class Menu {
 
 		System.out.println("Saving email address...");
 		activeUser.setEmail(newEmail); // Set the email
-		activeUser = us.changeUserDetails(activeUser); // Save the data to the file
+		activeUser = us.updateUser(activeUser); // Save the data to the file
 		System.out.println("Email address saved.");
 		log.debug(activeUser.getUsername() + " has changed their email address to newEmail " + newEmail + ": "
 				+ activeUser.getEmail() == newEmail);
@@ -822,7 +878,7 @@ public class Menu {
 
 		System.out.println("Saving password...");
 		activeUser.setPassword(newPassword);
-		us.changeUserDetails(activeUser);
+		us.updateUser(activeUser);
 		log.trace(activeUser.getUsername() + " is back in changePassword.");
 		System.out.println("Password Saved.");
 		log.trace(activeUser.getUsername() + " is exiting changePassword.");
@@ -853,7 +909,7 @@ public class Menu {
 			case 1: // User has to enter 1
 				System.out.println("Deactivating account...");
 				activeUser.setActive(false);
-				activeUser = us.changeUserDetails(activeUser); // Saves data into the file.
+				activeUser = us.updateUser(activeUser); // Saves data into the file.
 				log.trace(activeUser.getUsername() + " back in changeActiveStatusMenu.");
 				log.debug(activeUser.getUsername() + " has active status of " + activeUser.isActive());
 				activeUser = null; // Logs the user out now that they're inactive.
@@ -890,9 +946,9 @@ public class Menu {
 						System.out.println("Trying to " + activateString + " this account...");
 						selectedUser.setActive(status); // Change the status to the new status.
 
-						selectedUser = us.changeUserDetails(selectedUser); // Save the details to the file and return
-																			// the
-																			// user object.
+						selectedUser = us.updateUser(selectedUser); // Save the details to the file and return
+																	// the
+																	// user object.
 						log.trace(activeUser.getUsername() + " is back in changeActiveStatusMenu.");
 						log.debug("selectedUser now set to new status: " + selectedUser.isActive());
 						System.out.println("Account " + activateString + "d.");
@@ -981,8 +1037,9 @@ public class Menu {
 				if (userList.get(i).getUsername() != activeUser.getUsername()) {
 					System.out.println("\t" + Integer.toString(i + 1) + ". " + userList.get(i).getUsername());
 				}
-				System.out.println("\n\t" + Integer.toString(userList.size() + 1) + ". Quit");
+
 			}
+			System.out.println("\n\t" + Integer.toString(userList.size() + 1) + ". Quit");
 			int option = getUserInput() - 1; // This will get the input from the user and subtract it by one to
 												// make it usable for the array.
 			log.trace(activeUser.getUsername() + " is back in searchUsernameMenu.");

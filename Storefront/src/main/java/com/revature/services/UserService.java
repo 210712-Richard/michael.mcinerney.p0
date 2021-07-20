@@ -90,16 +90,19 @@ public class UserService {
 	 * @param user
 	 * @return
 	 */
-	public User changeUserDetails(User user) {
-		if (user == null) {
+	public User updateUser(User user) {
+		log.trace("App has entered updateUser.");
+		log.debug("isUsernameUnique Parameters: user: " + user);
+		if (user == null) { //If the user passed in was null
+			log.warn("user passed in was null");
+			log.trace("App is exiting updateUser.");
+			log.debug("updateUser is returning User: " + null);
 			return null;
 		}
-		log.trace("App has entered changeUserDetails.");
-		log.debug("isUsernameUnique Parameters: user: " + user);
 		ud.writeToFile(); //Save the file.
-		log.trace("App has returned to changeUserDetails.");
-		log.trace("App is exiting changeUserDetails.");
-		log.debug("register is returning User: " + user);
+		log.trace("App has returned to updateUser.");
+		log.trace("App is exiting updateUser.");
+		log.debug("updateUser is returning User: " + user);
 		return user;
 	}
 	
