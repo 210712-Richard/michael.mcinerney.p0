@@ -49,7 +49,7 @@ public class ItemDAO {
 	/**
 	 * Gets all items in the inventory.
 	 * 
-	 * @return Current Inventory
+	 * @return Current inventory
 	 */
 	public List<Item> getInventory() {
 		return inventory;

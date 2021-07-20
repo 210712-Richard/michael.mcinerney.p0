@@ -105,21 +105,6 @@ public class UserDAOTest {
 	}
 
 	@Test
-	public void testCheckUsernameReturnsTrue() {
-		// Returns true if the username has not been registered yet.
-		assertTrue(dao.checkUsername("DefaultUser1!1"), "Assert that an unregisterd username returns true.");
-
-	}
-
-	@Test
-	public void testCheckUsernameReturnsFalse() {
-		// Returns false if the username is taken, null, or blank.
-		assertFalse(dao.checkUsername(user.getUsername()), "Assert that registered username returns false.");
-		assertFalse(dao.checkUsername(null), "Assert that null username returns false.");
-		assertFalse(dao.checkUsername("  "), "Assert that a blank username returns false.");
-	}
-
-	@Test
 	public void testFindUsersByNameReturnsValidList() {
 		// Returns a non-empty list if the search string is in a User username with the
 		// type and status.
