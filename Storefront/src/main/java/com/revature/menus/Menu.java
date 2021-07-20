@@ -163,12 +163,14 @@ public class Menu {
 				break;
 			case 2:
 				// View, edit, and checkout cart
+				System.out.println("Here is the cart.");
 				customerCartMenu();
 				log.trace(activeUser.getUsername() + " has returned to openCustomerMenu");
 				activeUser = us.changeUserDetails(activeUser);
 				break;
 			case 3:
 				// View and edit orders
+				System.out.println("Here are you orders: ");
 				orderEditMenu(activeUser.getPastOrders(), OrderStatus.CANCELLED);
 				log.trace(activeUser.getUsername() + " has returned to openCustomerMenu");
 				activeUser = us.changeUserDetails(activeUser);
@@ -278,22 +280,24 @@ public class Menu {
 			System.out.println("No Items were found, please try again.");
 			return;
 		}
-		System.out.println("Here is the cart.");
 		double total = 0.0; // The total for the whole cart.
 
 		for (int i = 0; i < activeCart.size(); i++) { // Loop through the list
 			CartItem cartItem = activeCart.get(i); // For easier access
 			log.debug("Current cartItem in loop: " + cartItem);
 			// Print out the details of the item
-			String print = isOrderList ? "\t" : Integer.toString(i + 1) + ". ";
+			
+			//Add an extra tab for formatting or the number if it is a cart we're seeing. 
+			String print = isOrderList ? "\t" : Integer.toString(i + 1) + ". "; 
+			String extraTab = isOrderList ? "\t" : ""; // Add an extra tab for formatting.
 			System.out.println("\t" + print + cartItem.getItem().getName());
-			System.out.println("Unit Price: $" + cartItem.getItem().getPrice());
-			System.out.println("Quantity In Cart: " + cartItem.getQuantity());
+			System.out.println(extraTab + "\tUnit Price: $" + cartItem.getItem().getPrice());
+			System.out.println(extraTab + "\tQuantity In Cart: " + cartItem.getQuantity() + "\n");
 
 			total += cartItem.getItem().getPrice() * cartItem.getQuantity(); // Add to the total
 			log.debug("Current total of the cart: " + total);
 		} // Printing the total
-		System.out.println("\t Total for Cart: $" + total);
+		System.out.println("Total: $" + total);
 
 		log.trace(activeUser.getUsername() + " is now exiting viewCartItemsFromList.");
 	}
@@ -399,22 +403,26 @@ public class Menu {
 				System.out.println("\t" + Integer.toString(i + 1) + ". " + order.getOrderDate());
 				viewCartItemsFromList(order.getItemsOrdered(), true); // Will print the items in the list.
 				log.trace(activeUser.getUsername() + " is back in orderEditMenu.");
-				System.out.println("Status: " + order.getStatus());
+				System.out.println("\tStatus: " + order.getStatus() + "\n");
 			}
 			System.out.println("\t" + Integer.toString(orders.size() + 1) + ". Back");
 			selection = getUserInput() - 1; // Get the user's input
 			log.trace(activeUser.getUsername() + " is back in orderEditMenu.");
 			log.debug("selection has been set to user input - 1:  " + selection);
+			
+			//The selection is in the range of the orders list
 			if (selection >= 0 && selection < orders.size()) {
+				//If the order selected does not have the ORDERED status
 				if (orders.get(selection).getStatus() != OrderStatus.ORDERED) {
 					log.info(activeUser.getUsername() + " picked an order with order status "
 							+ orders.get(selection).getStatus());
 					System.out.println("That order cannot be changed. Please pick another one.");
 					selection = -1; // This will keep the user in the loop.
-				} else {
-
+				} else { //Continue with changing the order status
 					System.out.println("Are you sure you want to "
 							+ (((status == OrderStatus.CANCELLED) ? "Cancel" : "Refund") + " this order?"));
+					System.out.println("\t1. Yes");
+					System.out.println("\t2. No");
 					int affirm = getUserInput();
 					log.debug("affirm has been set to user input:  " + affirm);
 					switch (affirm) {
@@ -424,6 +432,7 @@ public class Menu {
 						System.out.println("Order status has been changed to " + status);
 						break;
 					default: // All other inputs will break
+						System.out.println("No orders were changed.");
 						break;
 					}
 				}
@@ -464,7 +473,11 @@ public class Menu {
 
 				break;
 			case 3:
-				// TODO: Refund an order
+				// Refund an order
+				User user = searchUsernameMenu(AccountType.CUSTOMER, false); //Search for the user
+				log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
+				orderEditMenu(user.getPastOrders(), OrderStatus.REFUNDED); //Find the order to refund
+				log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
 				break;
 			case 4:
 				// Edit Password for Managers
@@ -757,11 +770,13 @@ public class Menu {
 		if (editingSelf) {
 			// Menu when customer wants to deactivate their account.
 			System.out.println(
-					"\nAre you sure you want to deactivate your account? This option cannot be undone: [Y]es/[n]o");
-			String affirm = scanner.nextLine();
+					"\nAre you sure you want to deactivate your account? This option cannot be undone.");
+			System.out.println("\t1. Yes");
+			System.out.println("\t2. No");
+			int affirm = getUserInput();
 			log.debug(activeUser.getUsername() + " entered affirm: " + affirm);
 			switch (affirm) {
-			case "Y": // User has to enter "Y"
+			case 1: // User has to enter 1
 				System.out.println("Deactivating account...");
 				activeUser.setActive(false);
 				activeUser = us.changeUserDetails(activeUser); // Saves data into the file.
@@ -772,6 +787,7 @@ public class Menu {
 				System.out.println(
 						"Your account has been deactivated. If you want to reactivate it, please contact an administrator.\n");
 			default: // Any other input will have the user leave the menu.
+				System.out.println("Deactivation cancelled.");
 				break;
 			}
 		} else {
@@ -790,11 +806,13 @@ public class Menu {
 				User selectedUser = searchUsernameMenu(type, status);
 				if (selectedUser != null) {
 					System.out.println("Are you sure you want to " + activateString + " " + selectedUser.getUsername()
-							+ "? [Y]es/[n]o");
-					String affirm = scanner.nextLine(); // Get the users affirmative status
+							+ "?");
+					System.out.println("\t1. Yes");
+					System.out.println("\t2. No");
+					int affirm = getUserInput(); // Get the users affirmative status
 					log.debug(activeUser.getUsername() + " entered affirm: " + affirm);
 					switch (affirm) {
-					case "Y": // User entered "Y"
+					case 1: // User entered 1
 						System.out.println("Trying to " + activateString + " this account...");
 						selectedUser.setActive(status); // Change the status to the new status.
 
@@ -804,7 +822,8 @@ public class Menu {
 						log.trace(activeUser.getUsername() + " is back in changeActiveStatusMenu.");
 						log.debug("selectedUser now set to new status: " + selectedUser.isActive());
 						System.out.println("Account " + activateString + "d.");
-					default: // Any input that isn't "Y" will leave the menu
+					default: // Any input that isn't 1 will leave the menu
+						System.out.println("User's status has not changed.");
 						break;
 					}
 				}
