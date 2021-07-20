@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class User implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int id; //Unique ID of each user
 	private String username; //The unique username of the user
 	private String password; //The password used to log in
@@ -84,8 +88,8 @@ public class User implements Serializable{
 		this.isActive = isActive;
 	}
 	
-	public void addToCart(Item item, int quantity) {
-		cart.add(new CartItem(item, quantity));
+	public void addToCart(Item item, int quantity, double price) {
+		cart.add(new CartItem(item, quantity, price));
 	}
 	
 	public void createOrder() {

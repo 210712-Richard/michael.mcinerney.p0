@@ -10,7 +10,16 @@ public class CartItem implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private Item item;
 	private int quantity;
+	private double price;
 	
+	public double getPrice() {
+		return price;
+	}
+
+	public void setPrice(double price) {
+		this.price = price;
+	}
+
 	public CartItem() {
 		super();
 		quantity = 1;
@@ -21,11 +30,18 @@ public class CartItem implements Serializable{
 		this.item = item;
 	}
 	public CartItem(Item item, int quantity) {
-		super();
+		this();
 		this.item = item;
 		this.quantity = quantity;
+		this.price = item.getPrice();
 	}
-
+	
+	public CartItem(Item item, int quantity, double price) {
+		this();
+		this.item = item;
+		this.quantity = quantity;
+		this.price = price;
+	}
 	public Item getItem() {
 		return item;
 	}
@@ -47,7 +63,7 @@ public class CartItem implements Serializable{
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(item, quantity);
+		return Objects.hash(item, price, quantity);
 	}
 
 	@Override
@@ -59,13 +75,15 @@ public class CartItem implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		CartItem other = (CartItem) obj;
-		return Objects.equals(item, other.item) && quantity == other.quantity;
+		return Objects.equals(item, other.item)
+				&& Double.doubleToLongBits(price) == Double.doubleToLongBits(other.price) && quantity == other.quantity;
 	}
 
 	@Override
 	public String toString() {
-		return "CartItem [item=" + item + ", quantity=" + quantity + "]";
+		return "CartItem [item=" + item + ", quantity=" + quantity + ", price=" + price + "]";
 	}
-	
+
+
 	
 }

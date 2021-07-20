@@ -1,6 +1,7 @@
 package com.revature.beans;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Objects;
 
 public class Item implements Serializable{
@@ -62,6 +63,10 @@ public class Item implements Serializable{
 
 	public void setSale(Sale sale) {
 		this.sale = sale;
+	}
+	
+	public void setSale(LocalDate date, double price) {
+		this.sale = new Sale(date, price);
 	}
 
 	public int getAmountInInventory() {

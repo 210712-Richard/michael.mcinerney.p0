@@ -129,4 +129,8 @@ public class UserService {
 		return userList;
 	}
 	
+	public void updateSalesInCarts() {
+		UserDAO.checkSalesInCarts();
+	}
+	
 }
