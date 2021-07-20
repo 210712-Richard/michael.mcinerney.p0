@@ -63,13 +63,26 @@ public class UserService {
 	public Boolean isUsernameUnique(String username) {
 		log.trace("App has entered isUsernameUnique.");
 		log.debug("isUsernameUnique Parameters: username: " + username);
-		boolean isUnique = ud.checkUsername(username); //Check the DAO to see if username is taken
-		log.trace("App has returned to isUsernameUnique.");
+		if (username == null || username.isBlank()) { // If the username entered was null or blank.
+			log.warn("User entered a null or blank username");
+			log.trace("App is leaving isUsernameUnique.");
+			log.debug("App is returning Boolean: " + false);
+			return false;
+		}
+		List<User> users = ud.getUsers();
+		for (User user : users) { // Iterate through the list of users.
+			if (username.equals(user.getUsername())) { // If the username has been taken
+				log.debug(username + " has been found: " + user.getUsername());
+				log.trace("App is now exiting isUsernameUnique.");
+				log.debug("isUsernameUnique is returning Boolean: " + false);
+				return false;
+			}
+		}
 		ud.writeToFile(); //Save the file
 		log.trace("App has returned to isUsernameUnique.");
 		log.trace("App is exiting isUsernameUnique.");
-		log.debug("register is returning boolean: " + isUnique);
-		return isUnique;
+		log.debug("register is returning boolean: " + true);
+		return true;
 	}
 	
 	/**
@@ -77,16 +90,19 @@ public class UserService {
 	 * @param user
 	 * @return
 	 */
-	public User changeUserDetails(User user) {
-		if (user == null) {
+	public User updateUser(User user) {
+		log.trace("App has entered updateUser.");
+		log.debug("isUsernameUnique Parameters: user: " + user);
+		if (user == null) { //If the user passed in was null
+			log.warn("user passed in was null");
+			log.trace("App is exiting updateUser.");
+			log.debug("updateUser is returning User: " + null);
 			return null;
 		}
-		log.trace("App has entered changeUserDetails.");
-		log.debug("isUsernameUnique Parameters: user: " + user);
 		ud.writeToFile(); //Save the file.
-		log.trace("App has returned to changeUserDetails.");
-		log.trace("App is exiting changeUserDetails.");
-		log.debug("register is returning User: " + user);
+		log.trace("App has returned to updateUser.");
+		log.trace("App is exiting updateUser.");
+		log.debug("updateUser is returning User: " + user);
 		return user;
 	}
 	

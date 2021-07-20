@@ -1,6 +1,5 @@
 package com.revature.data;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,33 +106,6 @@ public class UserDAO {
 		return newUser;
 	}
 
-	/**
-	 * Check to see if the username has been taken already.
-	 * 
-	 * @param username The username to check
-	 * @return true if the username is unique. false otherwise
-	 */
-	public Boolean checkUsername(String username) {
-		log.trace("App has entered checkUsername.");
-		log.debug("checkUsername Parameters: username: " + username);
-		if (username == null || username.isBlank()) { // If the username entered was null or blank.
-			log.warn("User entered a null or blank username");
-			log.trace("App is leaving checkUsername.");
-			log.debug("App is returning Boolean: " + false);
-			return false;
-		}
-		for (User user : users) { // Iterate through the list of users.
-			if (username.equals(user.getUsername())) { // If the username has been taken
-				log.debug(username + " has been found: " + user.getUsername());
-				log.trace("App is now leaving checkUsername.");
-				log.debug("checkUsername is returning Boolean: " + false);
-				return false;
-			}
-		}
-		log.trace("App is now leaving checkUsername.");
-		log.debug("checkUsername is returning Boolean: " + true);
-		return true; // Means the username is unique
-	}
 
 	/**
 	 * Searches for a User by username, account type, and active status
@@ -163,5 +135,13 @@ public class UserDAO {
 		log.trace("App is now leaving findUsersByName.");
 		log.debug("findUsersByName is returning List<User>: " + retUsers);
 		return retUsers;
+	}
+
+	/**
+	 * Get the list of users
+	 * @return The list of users
+	 */
+	public List<User> getUsers() {
+		return users;
 	}
 }

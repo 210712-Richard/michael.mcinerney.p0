@@ -59,11 +59,10 @@ public class UserServiceTest {
 		service.isUsernameUnique(username);
 
 		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-		Mockito.verify(dao).checkUsername(captor.capture()); // Verifies that the checkUsername function is called from
+		Mockito.verify(dao).getUsers(); // Verifies that the getUsers function is called from
 																// UserDAO.
 		Mockito.verify(dao).writeToFile(); // Verifies that the writeToFile function is called from the UserDAO.
 
-		assertEquals(username, captor.getValue(), "Assert that username provided is used.");
 
 	}
 
@@ -125,8 +124,8 @@ public class UserServiceTest {
 	@Test
 	public void testChangeUserDetails() {
 		dao = mockHelper.setPrivateMock(service, "ud");
-		User savedUser = service.changeUserDetails(user);
-		User nullUser = service.changeUserDetails(null);
+		User savedUser = service.updateUser(user);
+		User nullUser = service.updateUser(null);
 
 		Mockito.verify(dao).writeToFile(); // Verifies that writeToFile is called.
 

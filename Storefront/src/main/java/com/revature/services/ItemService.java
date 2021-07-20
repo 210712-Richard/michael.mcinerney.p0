@@ -49,6 +49,14 @@ public class ItemService {
 	 */
 	public Item updateItem(Item item) {
 		log.trace("App has entered updateItem.");
+		log.debug("addItem parameters: item: " + item);
+		if(item == null) {
+			log.warn("item entered was null");
+			log.trace("App is exiting updateItem.");
+			log.debug("updateItem returning Item: " + item);
+			return null;
+		}
+		log.trace("App has entered updateItem.");
 		log.debug("updateItem parameters: item: " + item);
 		iDAO.writeToFile(); // Save the file
 		log.trace("App has returned to updateItem.");
