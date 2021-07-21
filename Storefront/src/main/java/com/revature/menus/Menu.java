@@ -153,23 +153,21 @@ public class Menu {
 							final double price = ((item.getSale() != null) ? item.getSale().getSalePrice()
 									: item.getPrice());
 							log.debug("price set to " + price);
-							
-							//Use a stream to see if the item is already in the cart. Null otherwise.
-							CartItem inCart = activeUser.getCart().stream()
-									.filter(c -> c.getItem().equals(item))
-									.findFirst()
-									.orElse(null);
-							
-							//The item was not in the cart
+
+							// Use a stream to see if the item is already in the cart. Null otherwise.
+							CartItem inCart = activeUser.getCart().stream().filter(c -> c.getItem().equals(item))
+									.findFirst().orElse(null);
+
+							// The item was not in the cart
 							if (inCart == null) {
 								activeUser.addToCart(item, quantity, price);
 							}
-							//The item is in the cart
+							// The item is in the cart
 							else {
 								inCart.setQuantity(quantity + inCart.getQuantity());
 								log.debug("User changed the quantity to " + inCart.getQuantity());
 							}
-							
+
 							log.debug(activeUser.getUsername() + " now has a cart of " + activeUser.getCart());
 
 							activeUser = us.updateUser(activeUser);
@@ -200,7 +198,7 @@ public class Menu {
 			case 3:
 				// View and edit orders
 				System.out.println("Here are you orders: ");
-				orderEditMenu(activeUser.getPastOrders(), OrderStatus.CANCELLED);
+				orderEditMenu(activeUser.getPastOrders(), true);
 				log.trace(activeUser.getUsername() + " has returned to openCustomerMenu");
 				activeUser = us.updateUser(activeUser);
 				log.trace(activeUser.getUsername() + " has returned to openCustomerMenu");
@@ -387,8 +385,9 @@ public class Menu {
 				User user = searchUsernameMenu(AccountType.CUSTOMER, false); // Search for the user
 				log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
 				if (user != null) { // The user selected a valid User
-					orderEditMenu(user.getPastOrders(), OrderStatus.REFUNDED); // Find the order to refund
+					orderEditMenu(user.getPastOrders(), false); // Find the order to refund
 					log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
+					us.updateUser(user);
 				}
 
 				break;
@@ -912,13 +911,13 @@ public class Menu {
 				activeUser.setActive(false);
 				if (!activeUser.getCart().isEmpty()) {
 					activeUser.getCart().stream()
-					//Loop through and increase each item inventory to 
-					.forEach((cartItem)->{
-						cartItem.getItem()
-						.setAmountInInventory(cartItem.getItem().getAmountInInventory()+ cartItem.getQuantity());
-						log.debug("Item inventory has changed to " + cartItem.getItem().getAmountInInventory());
-					});
-					activeUser.setCart(new ArrayList<CartItem>()); //Empty the cart.
+							// Loop through and increase each item inventory to
+							.forEach((cartItem) -> {
+								cartItem.getItem().setAmountInInventory(
+										cartItem.getItem().getAmountInInventory() + cartItem.getQuantity());
+								log.debug("Item inventory has changed to " + cartItem.getItem().getAmountInInventory());
+							});
+					activeUser.setCart(new ArrayList<CartItem>()); // Empty the cart.
 				}
 				activeUser = us.updateUser(activeUser); // Saves data into the file.
 				log.trace(activeUser.getUsername() + " back in changeActiveStatusMenu.");
@@ -956,21 +955,15 @@ public class Menu {
 					case 1: // User entered 1
 						System.out.println("Trying to " + activateString + " this account...");
 						selectedUser.setActive(status); // Change the status to the new status.
-						
-						//If the user has a cart and is being deactivated
+
+						// If the user has a cart and is being deactivated
 						if (!selectedUser.getCart().isEmpty() && status == false) {
-							selectedUser.getCart().stream()
-							//Loop through and increase each item inventory to 
-							.forEach((cartItem)->{
-								cartItem.getItem()
-								.setAmountInInventory(cartItem.getItem().getAmountInInventory()+ cartItem.getQuantity());
-								log.debug("Item inventory has changed to " + cartItem.getItem().getAmountInInventory());
-							});
-							selectedUser.setCart(new ArrayList<CartItem>()); //Empty the cart.
+							returnItemsToInventory(selectedUser.getCart());
+							selectedUser.setCart(new ArrayList<CartItem>()); // Empty the cart.
 						}
-						
+
 						// Save the details to the file and return the user object.
-						selectedUser = us.updateUser(selectedUser); 
+						selectedUser = us.updateUser(selectedUser);
 						log.trace(activeUser.getUsername() + " is back in changeActiveStatusMenu.");
 						log.debug("selectedUser now set to new status: " + selectedUser.isActive());
 						System.out.println("Account " + activateString + "d.");
@@ -999,6 +992,7 @@ public class Menu {
 		}
 		double total = 0.0; // The total for the whole cart.
 
+		String extraTab = isOrderList ? "\t" : ""; // Add an extra tab for formatting.
 		for (int i = 0; i < activeCart.size(); i++) { // Loop through the list
 			CartItem cartItem = activeCart.get(i); // For easier access
 			log.debug("Current cartItem in loop: " + cartItem);
@@ -1006,7 +1000,6 @@ public class Menu {
 
 			// Add an extra tab for formatting or the number if it is a cart we're seeing.
 			String print = isOrderList ? "\t" : Integer.toString(i + 1) + ". ";
-			String extraTab = isOrderList ? "\t" : ""; // Add an extra tab for formatting.
 			System.out.println("\t" + print + cartItem.getItem().getName());
 			System.out.println(extraTab + "\tUnit Price: $" + cartItem.getPrice());
 			System.out.println(extraTab + "\tQuantity In Cart: " + cartItem.getQuantity() + "\n");
@@ -1014,9 +1007,24 @@ public class Menu {
 			total += cartItem.getPrice() * cartItem.getQuantity(); // Add to the total
 			log.debug("Current total of the cart: " + total);
 		} // Printing the total
-		System.out.println("Total: $" + total);
+		System.out.println(extraTab + "Total: $" + total);
 
 		log.trace(activeUser.getUsername() + " is now exiting viewCartItemsFromList.");
+	}
+
+	private static void returnItemsToInventory(List<CartItem> items) {
+		log.trace("User has entered returnItemsToInventory");
+		log.debug("returnItemsToInventory parameters: items: " + items);
+		items.stream()
+				// Loop through and increase each item inventory to
+				.forEach((cartItem) -> {
+					cartItem.getItem()
+							.setAmountInInventory(cartItem.getItem().getAmountInInventory() + cartItem.getQuantity());
+					log.debug("Item inventory has changed to " + cartItem.getItem().getAmountInInventory());
+					is.updateItem(cartItem.getItem());
+					log.trace("User has returned to returnItemsToInventory");
+				});
+		log.trace("User is exiting returnItemsToInventory.");
 	}
 
 	/**
@@ -1134,10 +1142,11 @@ public class Menu {
 	 * @param orders The list of orders available to edit
 	 * @param status The status to set the selected order to
 	 */
-	private static void orderEditMenu(List<Order> orders, OrderStatus status) {
+	private static void orderEditMenu(List<Order> orders, boolean isCustomer) {
 		log.trace(activeUser.getUsername() + " is now in orderEditMenu.");
-		log.debug("orderEditMenu parameters: orders: " + orders + ", status: " + status);
-		if (orders == null || status == null) { // If the orders or status are null, will just return.
+		log.debug("orderEditMenu parameters: orders: " + orders + ", isCustomer: " + isCustomer);
+
+		if (orders == null) { // If the orders or status are null, will just return.
 			log.warn(((orders == null) ? "orders" : "status") + " was passed in as null.");
 			System.out.println("There was a problem getting orders. Please try again.");
 		}
@@ -1159,15 +1168,32 @@ public class Menu {
 
 			// The selection is in the range of the orders list
 			if (selection >= 0 && selection < orders.size()) {
-				// If the order selected does not have the ORDERED status
-				if (orders.get(selection).getStatus() != OrderStatus.ORDERED) {
+
+				// Get the status of the current order
+				OrderStatus currentStatus = orders.get(selection).getStatus();
+				// If the user is a customer and is trying to change a order without the ORDERED
+				// status
+				if ((isCustomer && !currentStatus.equals(OrderStatus.ORDERED)) ||
+				// Or the user is not a customer and the order status is not ordered or shipped
+						(!isCustomer && !(currentStatus.equals(OrderStatus.ORDERED)
+								|| currentStatus.equals(OrderStatus.SHIPPED)))) {
+
 					log.info(activeUser.getUsername() + " picked an order with order status "
 							+ orders.get(selection).getStatus());
 					System.out.println("That order cannot be changed. Please pick another one.");
 					selection = -1; // This will keep the user in the loop.
+
 				} else { // Continue with changing the order status
+
+					// Set the status to change to CANCELLED by default
+					OrderStatus status = OrderStatus.CANCELLED;
+
+					// If the user is not a customer and trying to change an already shipped order
+					if (!isCustomer && currentStatus.equals(OrderStatus.SHIPPED)) {
+						status = OrderStatus.REFUNDED;
+					}
 					System.out.println("Are you sure you want to "
-							+ (((status == OrderStatus.CANCELLED) ? "Cancel" : "Refund") + " this order?"));
+							+ (((status.equals(OrderStatus.CANCELLED)) ? "Cancel" : "Refund") + " this order?"));
 					System.out.println("\t1. Yes");
 					System.out.println("\t2. No");
 					int affirm = getUserInput();
@@ -1175,6 +1201,12 @@ public class Menu {
 					switch (affirm) {
 					case 1: // Order status will be changed
 						orders.get(selection).setStatus(status); // Changes the status
+
+						// If the order is being cancelled (wasn't shipped yet), the items will go back
+						// to inventory.
+						if (status.equals(OrderStatus.CANCELLED)) {
+							returnItemsToInventory(orders.get(selection).getItemsOrdered());
+						}
 						log.debug("order status has been set to " + orders.get(selection).getStatus());
 						System.out.println("Order status has been changed to " + status);
 						break;
