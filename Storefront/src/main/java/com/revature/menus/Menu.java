@@ -152,8 +152,23 @@ public class Menu {
 							final double price = ((item.getSale() != null) ? item.getSale().getSalePrice()
 									: item.getPrice());
 							log.debug("price set to " + price);
-
-							activeUser.addToCart(item, quantity, price);
+							
+							//Use a stream to see if the item is already in the cart. Null otherwise.
+							CartItem inCart = activeUser.getCart().stream()
+									.filter(c -> c.getItem().equals(item))
+									.findFirst()
+									.orElse(null);
+							
+							//The item was not in the cart
+							if (inCart == null) {
+								activeUser.addToCart(item, quantity, price);
+							}
+							//The item is in the cart
+							else {
+								inCart.setQuantity(quantity + inCart.getQuantity());
+								log.debug("User changed the quantity to " + inCart.getQuantity());
+							}
+							
 							log.debug(activeUser.getUsername() + " now has a cart of " + activeUser.getCart());
 
 							activeUser = us.updateUser(activeUser);
@@ -175,7 +190,7 @@ public class Menu {
 				// View, edit, and checkout cart
 
 				// If the cart is empty
-				
+
 				System.out.println("Here is the cart.");
 				customerCartMenu();
 				log.trace(activeUser.getUsername() + " has returned to openCustomerMenu");
