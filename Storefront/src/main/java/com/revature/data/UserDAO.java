@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.revature.beans.AccountType;
 import com.revature.beans.CartItem;
+import com.revature.beans.OrderStatus;
 import com.revature.beans.User;
 
 public class UserDAO {
@@ -44,6 +45,22 @@ public class UserDAO {
 		}
 
 		checkSalesInCarts();
+
+		// This will look through each order and change each order whose shipped date
+		// has passed to a status of SHIPPED
+		users.stream()
+		.forEach((u) -> { // Loop through each user
+			u.getPastOrders().stream()
+			.filter((order) -> { // Filter the orders by if they are ORDERED and their shipped
+															// date has passed
+				return (order.getStatus() == OrderStatus.ORDERED 
+						&& (order.getShipDate().isAfter(LocalDate.now())
+						|| order.getShipDate().isEqual(LocalDate.now())));
+			})
+			.forEach((order) -> { // For each order whose shipped date has passed and needs a status change
+				order.setStatus(OrderStatus.SHIPPED);
+			});
+		});
 	}
 
 	/**

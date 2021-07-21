@@ -2,6 +2,7 @@ package com.revature.beans;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -97,7 +98,7 @@ public class User implements Serializable{
 	}
 	
 	public void createOrder() {
-		pastOrders.add(new Order(cart, LocalDate.now()));
+		pastOrders.add(new Order(cart, LocalDate.now(), LocalDate.now().plus(Period.of(0, 0, cart.size()))));
 		cart = new ArrayList<CartItem>(); //Get rid of the items in the cart since it has been ordered.
 	}
 	@Override

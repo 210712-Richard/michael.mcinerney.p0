@@ -363,7 +363,7 @@ public class Menu {
 		managerLoop: while (true) {
 			System.out.println("\t1. Edit Inventory");
 			System.out.println("\t2. Deactivate Customer Account");
-			System.out.println("\t3. Refund Order");
+			System.out.println("\t3. Cancel or Refund Order");
 			System.out.println("\t4. Edit password");
 			System.out.println("\t5. Logout");
 
@@ -1160,6 +1160,7 @@ public class Menu {
 				viewCartItemsFromList(order.getItemsOrdered(), true); // Will print the items in the list.
 				log.trace(activeUser.getUsername() + " is back in orderEditMenu.");
 				System.out.println("\tStatus: " + order.getStatus() + "\n");
+				System.out.println("\tShip Date: " + order.getShipDate() + "\n");
 			}
 			System.out.println("\t" + Integer.toString(orders.size() + 1) + ". Back");
 			selection = getUserInput() - 1; // Get the user's input
