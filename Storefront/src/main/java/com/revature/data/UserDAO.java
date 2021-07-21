@@ -3,11 +3,13 @@ package com.revature.data;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.revature.beans.AccountType;
+import com.revature.beans.CartItem;
 import com.revature.beans.User;
 
 public class UserDAO {
@@ -74,15 +76,27 @@ public class UserDAO {
 		return null; // Returns null if no matching user was found.
 	}
 
+	/**
+	 * Used to update all the items in the users' cart to make sure the price is
+	 * correct
+	 */
 	public static void checkSalesInCarts() {
 		log.trace("App is now in checkSalesInCarts");
-		users.stream()
-				.filter((u) -> u.getCart() != null) // Filter through all users with a cart
+		
+		//Will be used to filter orders for carts that need to be edited.
+		Predicate<CartItem> cartPred = (c) -> 
+			//If the item price and the cart price do not match
+			(c.getItem().getPrice() != c.getPrice()) ||
+			//Or the cart item has a sale and the price in the cart doesn't match the sale price.
+			(c.getItem().getSale() != null 
+				&& c.getItem().getSale().getSalePrice() != c.getPrice());
+		
+		users.stream().filter((u) -> u.getCart() != null) // Filter through all users with a cart
 				.forEach((u) -> { // Loop through the filtered users
 					u.getCart().stream() // Get a stream for the user cart
-							.filter((c) -> c.getItem().getPrice() != c.getPrice()) // Filter through each item with a
-																					// different price in the cart
-							.forEach((c) -> {
+							//Filter using the predicate
+							.filter(cartPred)
+							.forEach((c) -> { //Loop through the filtered cart items
 								// If the sale has past its endDate or if the sale was removed
 								if (c.getItem().getSale() == null
 										|| c.getItem().getSale().getEndDate().isBefore(LocalDate.now())) {

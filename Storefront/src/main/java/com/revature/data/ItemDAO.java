@@ -46,8 +46,8 @@ public class ItemDAO {
 		
 		//This will loop through each item, and if the sale is past, set the Sale to null
 		inventory.stream()
-		.filter((i)->i.getSale() != null && i.getSale().getEndDate().isBefore(LocalDate.now()))
-		.forEach((i)->i.setSale(null));
+		.filter((item)->item.getSale() != null && item.getSale().getEndDate().isBefore(LocalDate.now()))
+		.forEach((item)->item.setSale(null));
 	}
 
 	/**

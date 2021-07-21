@@ -214,6 +214,9 @@ public class Menu {
 		log.trace(((activeUser == null) ? "User" : activeUser.getUsername()) + " is exiting openCustomerMenu.");
 	}
 
+	/*
+	 * The menu for a customer to edit their cart
+	 */
 	private static void customerCartMenu() {
 		// Implement cart functionality
 		log.trace(activeUser.getUsername() + " is now in customerCartMenu.");
@@ -282,6 +285,9 @@ public class Menu {
 
 	}
 
+	/**
+	 * View the list of carts from either a cart or an order
+	 */
 	private static void viewCartItemsFromList(List<CartItem> activeCart, boolean isOrderList) {
 		log.trace(activeUser.getUsername() + " has entered viewCartItemsFromLis");
 		log.debug("viewCartItemsFromList parameters: " + activeCart);
@@ -379,6 +385,12 @@ public class Menu {
 		return selectedItem;
 	}
 
+	/**
+	 * Loops through the ItemCategory enum and displays them for the user to pick
+	 * one.
+	 * 
+	 * @return the selected ItemCategory
+	 */
 	private static ItemCategory categoryMenu() {
 		log.trace(activeUser.getUsername() + " has entered categoryMenu");
 		ItemCategory selectedCategory = null;
@@ -417,6 +429,12 @@ public class Menu {
 		return selectedCategory;
 	}
 
+	/**
+	 * Used to edit an order's status
+	 * 
+	 * @param orders The list of orders available to edit
+	 * @param status The status to set the selected order to
+	 */
 	private static void orderEditMenu(List<Order> orders, OrderStatus status) {
 		log.trace(activeUser.getUsername() + " is now in orderEditMenu.");
 		log.debug("orderEditMenu parameters: orders: " + orders + ", status: " + status);
@@ -537,6 +555,9 @@ public class Menu {
 		log.trace("User is exiting openManagerMenu");
 	}
 
+	/**
+	 * Opens a menu to add an item or edit an existing item
+	 */
 	private static void editInventoryMenu() {
 		log.trace(activeUser.getUsername() + " has entered editInventoryMenu.");
 		// Users selects if they want to add item or edit item quantity
@@ -620,7 +641,7 @@ public class Menu {
 					int affirm = getUserInput();
 					switch (affirm) {
 					case 1:
-						//The user wants to end the sale
+						// The user wants to end the sale
 						System.out.println("Ending the sale...");
 						saleItem.setSale(null);
 						log.debug("saleItem sale has been set to " + saleItem.getSale());
@@ -629,7 +650,7 @@ public class Menu {
 						log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
 						continue editLoop;
 					default:
-						//Invalid input or the user does not want to end the sale.
+						// Invalid input or the user does not want to end the sale.
 						System.out.println("No sale was modified");
 					}
 				}
@@ -637,11 +658,12 @@ public class Menu {
 				System.out.println("Please enter the price would like for " + saleItem.getName() + " for the sale?");
 				double salePrice = getUserDouble();
 				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
-				
+
 				// Price cannot be 0 or less or be greater than the item's current price
-				if (salePrice <= 0.0 || salePrice >= saleItem.getPrice()) { 
+				if (salePrice <= 0.0 || salePrice >= saleItem.getPrice()) {
 					log.warn(activeUser.getUsername() + " tried to enter an invalid price.");
-					System.out.println("Invalid price. Please make sure price is greater than 0 and less than the item's normal price.");
+					System.out.println(
+							"Invalid price. Please make sure price is greater than 0 and less than the item's normal price.");
 					break;
 				}
 
@@ -1076,6 +1098,14 @@ public class Menu {
 		log.trace(activeUser.getUsername() + " is now leaving adminAccountStatusMenu.");
 	}
 
+	/**
+	 * Search for a user by typing in a username. Filters by AccountType and if the
+	 * account is active.
+	 * 
+	 * @param type   The type of account to look up
+	 * @param status The active status of accounts to filter by
+	 * @return The User that the user selects
+	 */
 	private static User searchUsernameMenu(AccountType type, boolean status) {
 		log.trace(activeUser.getUsername() + " is now in searchUsernameMenu.");
 		log.debug("searchUsernameMenu with Parameters: type: " + type + ", status: " + status);
@@ -1132,7 +1162,11 @@ public class Menu {
 		log.debug("searchUsernameMenu is returning User: " + selectedUser);
 		return selectedUser;
 	}
-
+	
+	/**
+	 * Used to parse a double from a user's input
+	 * @return The double the user entered. 0.0 if the user did not input a valid double
+	 */
 	private static double getUserDouble() {
 		log.trace("User is now in getUserDouble");
 		double userInput;
