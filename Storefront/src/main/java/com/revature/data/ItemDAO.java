@@ -61,6 +61,13 @@ public class ItemDAO {
 	public List<Item> getInventory() {
 		return inventory;
 	}
+	
+	public Item getItem(int itemId) {
+		return inventory.stream()
+				.filter((item)->item.getId() == itemId)
+				.findFirst()
+				.orElse(null);
+	}
 
 	/**
 	 * Gets all items for a specified category. Will return out of stock items based

@@ -279,14 +279,5 @@ public class UserServiceTest {
 
 	}
 	
-	@SuppressWarnings("static-access")
-	@Test
-	public void testUpdateSalesInCarts() {
-		dao = mockHelper.setPrivateMock(service, "ud");
-		
-		service.updateSalesInCarts();
-		
-		Mockito.verify(dao).checkSalesInCarts();
-	}
 
 }

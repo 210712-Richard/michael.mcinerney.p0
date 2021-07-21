@@ -13,7 +13,12 @@ import com.revature.data.ItemDAO;
 public class ItemService {
 	private ItemDAO iDAO = new ItemDAO(); // Used to get the items and write to file.
 	private static final Logger log = LogManager.getLogger(ItemService.class); // Used to create logs
-
+	
+	
+	public Item getItem(int itemId) {
+		log.trace("App is now in getItem");
+		return iDAO.getItem(itemId);
+	}
 	/**
 	 * Get a list of items from a particular category.
 	 * 
