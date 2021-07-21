@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public class CartItem implements Serializable{
 	private static final long serialVersionUID = 1L; //Default Serial version
-	private Item item; //The item in the cart
+	private int itemId; //The item in the cart
 	private int quantity; //The amount of the item in the cart
 	private double price; //The price of the item
 	
@@ -21,32 +21,20 @@ public class CartItem implements Serializable{
 		super();
 		quantity = 1;
 	}
-	
-	public CartItem(Item item) {
+	public CartItem(int itemId, int quantity, double price) {
 		this();
-		this.item = item;
-	}
-	public CartItem(Item item, int quantity) {
-		this();
-		this.item = item;
-		this.quantity = quantity;
-		this.price = item.getPrice();
-	}
-	
-	public CartItem(Item item, int quantity, double price) {
-		this();
-		this.item = item;
+		this.itemId = itemId;
 		this.quantity = quantity;
 		this.price = price;
 	}
-	public Item getItem() {
-		return item;
+	public int getItemId() {
+		return itemId;
 	}
 
-	public void setItem(Item item) {
-		this.item = item;
+	public void setItemId(int itemId) {
+		this.itemId = itemId;
 	}
-
+	
 	public int getQuantity() {
 		return quantity;
 	}
@@ -60,7 +48,7 @@ public class CartItem implements Serializable{
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(item, price, quantity);
+		return Objects.hash(itemId, price, quantity);
 	}
 
 	@Override
@@ -72,13 +60,13 @@ public class CartItem implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		CartItem other = (CartItem) obj;
-		return Objects.equals(item, other.item)
-				&& Double.doubleToLongBits(price) == Double.doubleToLongBits(other.price) && quantity == other.quantity;
+		return itemId == other.itemId && Double.doubleToLongBits(price) == Double.doubleToLongBits(other.price)
+				&& quantity == other.quantity;
 	}
 
 	@Override
 	public String toString() {
-		return "CartItem [item=" + item + ", quantity=" + quantity + ", price=" + price + "]";
+		return "CartItem [itemId=" + itemId + ", quantity=" + quantity + ", price=" + price + "]";
 	}
 
 

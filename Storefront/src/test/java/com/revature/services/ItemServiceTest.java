@@ -181,4 +181,23 @@ public class ItemServiceTest {
 		assertNull("Assert that null item returns null.", service.updateItem(null));
 
 	}
+	
+	@Test
+	public void testGetItem() {
+		int id = item.getId();
+		Item retItem = service.getItem(id);
+		assertEquals(item, retItem, "Assert that the item returned equals the one with the id that was passed in.");
+		
+		Item nullItem = service.getItem(-1);
+		assertNull("Assert that an invalid id results in a null Item.", nullItem);
+		dao = mock.setPrivateMock(service, "iDAO");
+		
+		service.getItem(id);
+		
+		ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass(Integer.class);
+		
+		Mockito.verify(dao).getItem(captor.capture());
+		
+		assertEquals(id, captor.getValue(), "Assert that the number passed in is the same");
+	}
 }

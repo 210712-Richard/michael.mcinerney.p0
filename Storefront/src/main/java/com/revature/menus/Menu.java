@@ -158,12 +158,14 @@ public class Menu {
 							log.debug("price set to " + price);
 
 							// Use a stream to see if the item is already in the cart. Null otherwise.
-							CartItem inCart = activeUser.getCart().stream().filter(c -> c.getItem().equals(item))
-									.findFirst().orElse(null);
+							CartItem inCart = activeUser.getCart().stream()
+									.filter(c -> c.getItemId() == item.getId())
+									.findFirst()
+									.orElse(null);
 
 							// The item was not in the cart
 							if (inCart == null) {
-								activeUser.addToCart(item, quantity, price);
+								activeUser.addToCart(item.getId(), quantity, price);
 							}
 							// The item is in the cart
 							else {
@@ -260,7 +262,7 @@ public class Menu {
 			log.debug("cartSize is " + cartSize);
 
 			if (selection >= 0 && selection < cartSize) { // If the selection is in the index range of the cart.
-				Item i = activeUser.getCart().get(selection).getItem();
+				Item i = is.getItem(activeUser.getCart().get(selection).getItemId());
 				log.debug("Item selected is " + i);
 				int maxQuantity = activeUser.getCart().get(selection).getQuantity() + i.getAmountInInventory();
 
@@ -275,7 +277,7 @@ public class Menu {
 				int quantity = getUserInput();
 				if (quantity == 0) { // If quantity is zero
 					log.info(activeUser.getUsername() + " is removing " + i.getName());
-					i = activeUser.getCart().remove(selection).getItem(); // Remove the item from the cart.
+					i = is.getItem(activeUser.getCart().remove(selection).getItemId()); // Remove the item from the cart.
 					i.setAmountInInventory(maxQuantity); // Change the quantity to the correct amount
 					log.debug("items new amount is now " + i.getAmountInInventory());
 					is.updateItem(i);
@@ -512,7 +514,6 @@ public class Menu {
 						is.updateItem(saleItem);
 						log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
 						System.out.println("The sale has ended.");
-						us.updateSalesInCarts();
 						log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
 						continue editLoop;
 					default:
@@ -560,7 +561,6 @@ public class Menu {
 				log.debug("saleItem has sale " + saleItem.getSale());
 				saleItem = is.updateItem(saleItem);
 				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
-				us.updateSalesInCarts();
 				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
 				System.out.println("The sale has been added!");
 				break;
@@ -920,9 +920,9 @@ public class Menu {
 					activeUser.getCart().stream()
 							// Loop through and increase each item inventory to
 							.forEach((cartItem) -> {
-								cartItem.getItem().setAmountInInventory(
-										cartItem.getItem().getAmountInInventory() + cartItem.getQuantity());
-								log.debug("Item inventory has changed to " + cartItem.getItem().getAmountInInventory());
+								is.getItem(cartItem.getItemId()).setAmountInInventory(
+										is.getItem(cartItem.getItemId()).getAmountInInventory() + cartItem.getQuantity());
+								is.updateItem(is.getItem(cartItem.getItemId()));
 							});
 					activeUser.setCart(new ArrayList<CartItem>()); // Empty the cart.
 				}
@@ -998,20 +998,30 @@ public class Menu {
 			return;
 		}
 		double total = 0.0; // The total for the whole cart.
-
+		
 		String extraTab = isOrderList ? "\t" : ""; // Add an extra tab for formatting.
 		for (int i = 0; i < activeCart.size(); i++) { // Loop through the list
 			CartItem cartItem = activeCart.get(i); // For easier access
 			log.debug("Current cartItem in loop: " + cartItem);
 			// Print out the details of the item
-
+			
+			//Get the price that should be displayed:
+			double price = 0.0;
+			if (isOrderList) {
+				price = cartItem.getPrice();
+			}
+			else { //Display the item price and update the cart item with the price
+				Item item = is.getItem(cartItem.getItemId());
+				price = ((item.getSale() == null) ? item.getPrice() : item.getSale().getSalePrice());
+				cartItem.setPrice(price);
+			}
 			// Add an extra tab for formatting or the number if it is a cart we're seeing.
 			String print = isOrderList ? "\t" : Integer.toString(i + 1) + ". ";
-			System.out.println("\t" + print + cartItem.getItem().getName());
-			System.out.println(extraTab + "\tUnit Price: $" + priceFormat.format(cartItem.getPrice()));
+			System.out.println("\t" + print + is.getItem(cartItem.getItemId()).getName());
+			System.out.println(extraTab + "\tUnit Price: $" + priceFormat.format(price));
 			System.out.println(extraTab + "\tQuantity In Cart: " + cartItem.getQuantity() + "\n");
 
-			total += cartItem.getPrice() * cartItem.getQuantity(); // Add to the total
+			total += price * cartItem.getQuantity(); // Add to the total
 			log.debug("Current total of the cart: " + total);
 		} // Printing the total
 		System.out.println(extraTab + "Total: $" + priceFormat.format(total));
@@ -1025,10 +1035,9 @@ public class Menu {
 		items.stream()
 				// Loop through and increase each item inventory to
 				.forEach((cartItem) -> {
-					cartItem.getItem()
-							.setAmountInInventory(cartItem.getItem().getAmountInInventory() + cartItem.getQuantity());
-					log.debug("Item inventory has changed to " + cartItem.getItem().getAmountInInventory());
-					is.updateItem(cartItem.getItem());
+					is.getItem(cartItem.getItemId())
+							.setAmountInInventory(is.getItem(cartItem.getItemId()).getAmountInInventory() + cartItem.getQuantity());
+					is.updateItem(is.getItem(cartItem.getItemId()));
 					log.trace("User has returned to returnItemsToInventory");
 				});
 		log.trace("User is exiting returnItemsToInventory.");
