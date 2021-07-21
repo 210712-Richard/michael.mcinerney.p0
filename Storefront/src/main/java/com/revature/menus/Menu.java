@@ -1,5 +1,6 @@
 package com.revature.menus;
 
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +30,11 @@ public class Menu {
 
 	private static UserService us = new UserService(); // Used to modify user states
 
-	private static ItemService is = new ItemService();
+	private static ItemService is = new ItemService(); //Used to modify inventory
 
 	private static User activeUser = null; // The current logged in user
+	
+	private static DecimalFormat priceFormat = new DecimalFormat("#.##"); //Used to format prices correctly
 
 	/**
 	 * The first method. Opens the main menu.
@@ -279,6 +282,8 @@ public class Menu {
 					log.trace(activeUser.getUsername() + " is back in customerCartMenu");
 
 					System.out.println(i.getName() + " removed.");
+					
+				//Changes the quantity of one of the items in the cart
 				} else if (quantity > 0 && quantity <= maxQuantity) {
 					// Set the quantity in the cart to the quantity entered
 					activeUser.getCart().get(selection).setQuantity(quantity);
@@ -504,6 +509,8 @@ public class Menu {
 						System.out.println("Ending the sale...");
 						saleItem.setSale(null);
 						log.debug("saleItem sale has been set to " + saleItem.getSale());
+						is.updateItem(saleItem);
+						log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
 						System.out.println("The sale has ended.");
 						us.updateSalesInCarts();
 						log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
@@ -1001,13 +1008,13 @@ public class Menu {
 			// Add an extra tab for formatting or the number if it is a cart we're seeing.
 			String print = isOrderList ? "\t" : Integer.toString(i + 1) + ". ";
 			System.out.println("\t" + print + cartItem.getItem().getName());
-			System.out.println(extraTab + "\tUnit Price: $" + cartItem.getPrice());
+			System.out.println(extraTab + "\tUnit Price: $" + priceFormat.format(cartItem.getPrice()));
 			System.out.println(extraTab + "\tQuantity In Cart: " + cartItem.getQuantity() + "\n");
 
 			total += cartItem.getPrice() * cartItem.getQuantity(); // Add to the total
 			log.debug("Current total of the cart: " + total);
 		} // Printing the total
-		System.out.println(extraTab + "Total: $" + total);
+		System.out.println(extraTab + "Total: $" + priceFormat.format(total));
 
 		log.trace(activeUser.getUsername() + " is now exiting viewCartItemsFromList.");
 	}
@@ -1057,10 +1064,10 @@ public class Menu {
 					System.out.println("\t" + Integer.toString(i + 1) + ". " + item.getName());
 
 					// If there is a sale for this item right now
-					String priceString = "Price: $" + item.getPrice();
+					String priceString = "Price: $" + priceFormat.format(item.getPrice());
 					if (item.getSale() != null) {
 						priceString = "SALE! (ends " + item.getSale().getEndDate() + ") Sale Price: $"
-								+ item.getSale().getSalePrice();
+								+ priceFormat.format(item.getSale().getSalePrice());
 					}
 					// Print the price and amount in stock
 					System.out.println("\t\t" + priceString + " Amount In Stock: " + item.getAmountInInventory());

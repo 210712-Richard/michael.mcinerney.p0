@@ -54,7 +54,7 @@ public class UserDAO {
 			.filter((order) -> { // Filter the orders by if they are ORDERED and their shipped
 															// date has passed
 				return (order.getStatus() == OrderStatus.ORDERED 
-						&& (order.getShipDate().isAfter(LocalDate.now())
+						&& (order.getShipDate().isBefore(LocalDate.now())
 						|| order.getShipDate().isEqual(LocalDate.now())));
 			})
 			.forEach((order) -> { // For each order whose shipped date has passed and needs a status change
