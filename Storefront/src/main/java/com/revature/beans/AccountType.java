@@ -2,8 +2,6 @@ package com.revature.beans;
 
 /**
  * The type of the account the user has
- * @author Michael McInerney
- *
  */
 public enum AccountType {
 	/**
@@ -15,7 +13,7 @@ public enum AccountType {
 	 */
 	MANAGER,
 	/**
-	 * Administrators can create and deactive manager accounts
+	 * Administrators can create and deactivate manager accounts
 	 */
 	ADMINISTRATOR
 }

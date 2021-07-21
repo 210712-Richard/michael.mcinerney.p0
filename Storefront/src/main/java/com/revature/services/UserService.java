@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import com.revature.beans.AccountType;
 import com.revature.beans.User;
 import com.revature.data.UserDAO;
-import com.revature.menus.Menu;
 
 public class UserService {
 	

@@ -5,13 +5,14 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class Item implements Serializable{
-	private int id;
-	private String name;
-	private double price;
-	private int amountInInventory;
-	private ItemCategory category;
-	private String description;
-	private Sale sale;
+	private static final long serialVersionUID = 1L; //Default serial version
+	private int id; //The ID of the item
+	private String name; //Name of the item
+	private double price; //The price of the item
+	private int amountInInventory; //The amount in the inventory
+	private ItemCategory category; //The category of the item
+	private String description; //A description of the item
+	private Sale sale; //A sale for the item. Will be null if no sale
 	
 	public Item() {
 		super();
@@ -101,7 +102,7 @@ public class Item implements Serializable{
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(amountInInventory, category, description, id, name);
+		return Objects.hash(amountInInventory, category, description, id, name, price, sale);
 	}
 
 	@Override
@@ -114,13 +115,15 @@ public class Item implements Serializable{
 			return false;
 		Item other = (Item) obj;
 		return amountInInventory == other.amountInInventory && category == other.category
-				&& Objects.equals(description, other.description) && id == other.id && Objects.equals(name, other.name);
+				&& Objects.equals(description, other.description) && id == other.id && Objects.equals(name, other.name)
+				&& Double.doubleToLongBits(price) == Double.doubleToLongBits(other.price)
+				&& Objects.equals(sale, other.sale);
 	}
 
 	@Override
 	public String toString() {
-		return "Item [id=" + id + ", name=" + name + ", amountInInventory=" + amountInInventory + ", category="
-				+ category + ", description=" + description + "]";
+		return "Item [id=" + id + ", name=" + name + ", price=" + price + ", amountInInventory=" + amountInInventory
+				+ ", category=" + category + ", description=" + description + ", sale=" + sale + "]";
 	}
 	
 }

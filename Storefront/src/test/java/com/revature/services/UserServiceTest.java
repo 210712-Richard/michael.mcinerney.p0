@@ -58,7 +58,6 @@ public class UserServiceTest {
 		String username = "Test";
 		service.isUsernameUnique(username);
 
-		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 		Mockito.verify(dao).getUsers(); // Verifies that the getUsers function is called from
 																// UserDAO.
 		Mockito.verify(dao).writeToFile(); // Verifies that the writeToFile function is called from the UserDAO.

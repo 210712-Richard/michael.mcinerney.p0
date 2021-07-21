@@ -2,7 +2,6 @@ package com.revature.beans;
 
 /**
  * Is the category that the item belongs to.
- * @author Michael McInerney
  *
  */
 public enum ItemCategory {

@@ -4,13 +4,10 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class CartItem implements Serializable{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private Item item;
-	private int quantity;
-	private double price;
+	private static final long serialVersionUID = 1L; //Default Serial version
+	private Item item; //The item in the cart
+	private int quantity; //The amount of the item in the cart
+	private double price; //The price of the item
 	
 	public double getPrice() {
 		return price;

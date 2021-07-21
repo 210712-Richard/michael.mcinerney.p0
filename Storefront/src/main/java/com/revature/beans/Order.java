@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Order implements Serializable{
+	private static final long serialVersionUID = 1L;
 	private List<CartItem> itemsOrdered;
 	private LocalDate orderDate;
 	private OrderStatus status;

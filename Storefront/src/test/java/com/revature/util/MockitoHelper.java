@@ -3,12 +3,10 @@ package com.revature.util;
 import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.FieldSetter;
 
-import com.revature.data.UserDAO;
-
 public class MockitoHelper<T> {
 
 	private final Class<T> type;
-	
+
 	public MockitoHelper(Class<T> type) {
 		this.type = type;
 	}
@@ -25,7 +23,7 @@ public class MockitoHelper<T> {
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
-		
+
 		return mock;
 	}
 }

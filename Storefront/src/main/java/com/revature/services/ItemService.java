@@ -9,7 +9,6 @@ import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
 import com.revature.data.ItemDAO;
 
-import jdk.internal.org.jline.utils.Log;
 
 public class ItemService {
 	private ItemDAO iDAO = new ItemDAO(); // Used to get the items and write to file.
