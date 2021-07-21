@@ -2,12 +2,11 @@ package com.revature.beans;
 
 /**
  * The current status of the order.
- * @author Michael McInerney
  *
  */
 public enum OrderStatus {
 	/**
-	 * The order has been processed.
+	 * The order has been Ordered.
 	 */
 	ORDERED,
 	/**
@@ -16,7 +15,12 @@ public enum OrderStatus {
 	CANCELLED,
 	/**
 	 * The order was refunded, but not cancelled. 
-	 * Usually means the customer was refunded after the order was already processed.
+	 * Usually means the customer was refunded after the order was already shipped.
 	 */
-	REFUNDED
+	REFUNDED,
+	/**
+	 * The order has shipped and can't be cancelled anymore
+	 */
+	SHIPPED,
+	
 }

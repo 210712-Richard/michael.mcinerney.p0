@@ -24,3 +24,5 @@ hs_err_pid*
 /.metadata/
 
 # Data files for persistance. Will include if needed to.
+users.dat
+inventory.dat

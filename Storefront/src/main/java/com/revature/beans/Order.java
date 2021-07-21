@@ -9,16 +9,18 @@ public class Order implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private List<CartItem> itemsOrdered;
 	private LocalDate orderDate;
+	private LocalDate shipDate;
 	private OrderStatus status;
 	
 	public Order() {
 		super();
 		status = OrderStatus.ORDERED;
 	}
-	public Order(List<CartItem> itemsOrdered, LocalDate orderDate) {
+	public Order(List<CartItem> itemsOrdered, LocalDate orderDate, LocalDate shipDate) {
 		this();
 		this.itemsOrdered = itemsOrdered;
 		this.orderDate = orderDate;
+		this.shipDate = shipDate;
 	}
 	public List<CartItem> getItemsOrdered() {
 		return itemsOrdered;
@@ -32,6 +34,12 @@ public class Order implements Serializable{
 	public void setOrderDate(LocalDate orderDate) {
 		this.orderDate = orderDate;
 	}
+	public LocalDate getShipDate() {
+		return shipDate;
+	}
+	public void setShippedDate(LocalDate shipDate) {
+		this.shipDate = shipDate;
+	}
 	public OrderStatus getStatus() {
 		return status;
 	}
@@ -40,7 +48,7 @@ public class Order implements Serializable{
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(itemsOrdered, orderDate, status);
+		return Objects.hash(itemsOrdered, orderDate, shipDate, status);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -52,11 +60,12 @@ public class Order implements Serializable{
 			return false;
 		Order other = (Order) obj;
 		return Objects.equals(itemsOrdered, other.itemsOrdered) && Objects.equals(orderDate, other.orderDate)
-				&& status == other.status;
+				&& Objects.equals(shipDate, other.shipDate) && status == other.status;
 	}
 	@Override
 	public String toString() {
-		return "Order [itemsOrdered=" + itemsOrdered + ", orderDate=" + orderDate + ", status=" + status + "]";
+		return "Order [itemsOrdered=" + itemsOrdered + ", orderDate=" + orderDate + ", shippedDate=" + shipDate
+				+ ", status=" + status + "]";
 	}
 	
 }
