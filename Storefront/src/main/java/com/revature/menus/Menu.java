@@ -1,6 +1,7 @@
 package com.revature.menus;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -909,6 +910,16 @@ public class Menu {
 			case 1: // User has to enter 1
 				System.out.println("Deactivating account...");
 				activeUser.setActive(false);
+				if (!activeUser.getCart().isEmpty()) {
+					activeUser.getCart().stream()
+					//Loop through and increase each item inventory to 
+					.forEach((cartItem)->{
+						cartItem.getItem()
+						.setAmountInInventory(cartItem.getItem().getAmountInInventory()+ cartItem.getQuantity());
+						log.debug("Item inventory has changed to " + cartItem.getItem().getAmountInInventory());
+					});
+					activeUser.setCart(new ArrayList<CartItem>()); //Empty the cart.
+				}
 				activeUser = us.updateUser(activeUser); // Saves data into the file.
 				log.trace(activeUser.getUsername() + " back in changeActiveStatusMenu.");
 				log.debug(activeUser.getUsername() + " has active status of " + activeUser.isActive());
@@ -945,10 +956,21 @@ public class Menu {
 					case 1: // User entered 1
 						System.out.println("Trying to " + activateString + " this account...");
 						selectedUser.setActive(status); // Change the status to the new status.
-
-						selectedUser = us.updateUser(selectedUser); // Save the details to the file and return
-																	// the
-																	// user object.
+						
+						//If the user has a cart and is being deactivated
+						if (!selectedUser.getCart().isEmpty() && status == false) {
+							selectedUser.getCart().stream()
+							//Loop through and increase each item inventory to 
+							.forEach((cartItem)->{
+								cartItem.getItem()
+								.setAmountInInventory(cartItem.getItem().getAmountInInventory()+ cartItem.getQuantity());
+								log.debug("Item inventory has changed to " + cartItem.getItem().getAmountInInventory());
+							});
+							selectedUser.setCart(new ArrayList<CartItem>()); //Empty the cart.
+						}
+						
+						// Save the details to the file and return the user object.
+						selectedUser = us.updateUser(selectedUser); 
 						log.trace(activeUser.getUsername() + " is back in changeActiveStatusMenu.");
 						log.debug("selectedUser now set to new status: " + selectedUser.isActive());
 						System.out.println("Account " + activateString + "d.");
