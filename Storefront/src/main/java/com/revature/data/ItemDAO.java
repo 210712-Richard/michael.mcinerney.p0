@@ -11,14 +11,15 @@ import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
 
 public class ItemDAO {
-	private static List<Item> inventory;
-
-	private static String filename = "inventory.dat";
+	private static List<Item> inventory; //All the items in the inventory
+ 
+	private static String filename = "inventory.dat"; //The file where inventory is saved.
 
 	private static final Logger log = LogManager.getLogger(ItemDAO.class); // Used to create logs
 
 	/**
-	 * Loads the file. If the file does not exist, will create items to add to the list.
+	 * Loads the file. If the file does not exist, will create items to add to the
+	 * list.
 	 */
 	static {
 		try {
@@ -27,13 +28,14 @@ public class ItemDAO {
 		} catch (Exception e) { // Logs the error, the app will continue as usual
 			log.warn(filename + " was not found.");
 		}
-		if (inventory == null) { //If no inventory was found.
+		if (inventory == null) { // If no inventory was found.
 			inventory = new ArrayList<Item>();
 			inventory.add(new Item(inventory.size(), "PC Desktop", 2000.00, 5, ItemCategory.DESKTOP_COMPUTER,
 					"A Windows 10 personal computer."));
 			inventory.add(new Item(inventory.size(), "Mac Desktop", 1000.00, 0, ItemCategory.DESKTOP_COMPUTER,
 					"An Apple Desktop."));
-			inventory.add(new Item(inventory.size(), "MacBook", 1500.00, 5,  ItemCategory.LAPTOP_COMPUTER, "An Apple laptop."));
+			inventory.add(new Item(inventory.size(), "MacBook", 1500.00, 5, ItemCategory.LAPTOP_COMPUTER,
+					"An Apple laptop."));
 			inventory.add(new Item(inventory.size(), "Mechanical Keyboard", 150.00, 5, ItemCategory.COMPUTER_ACCESSORY,
 					"A heavy-duty keyboard."));
 			inventory.add(new Item(inventory.size(), "1TB External HDD", 80.00, 5, ItemCategory.STORAGE_DEVICE,
@@ -43,11 +45,12 @@ public class ItemDAO {
 			inventory.add(new Item(inventory.size(), "Windows 10 Home Edition", 90.00, 5, ItemCategory.SOFTWARE,
 					"A copy of Windows 10 for home computers."));
 		}
-		
-		//This will loop through each item, and if the sale is past, set the Sale to null
+
+		// This will loop through each item, and if the sale is past, set the Sale to
+		// null
 		inventory.stream()
-		.filter((item)->item.getSale() != null && item.getSale().getEndDate().isBefore(LocalDate.now()))
-		.forEach((item)->item.setSale(null));
+				.filter((item) -> item.getSale() != null && item.getSale().getEndDate().isBefore(LocalDate.now()))
+				.forEach((item) -> item.setSale(null));
 	}
 
 	/**
@@ -73,7 +76,7 @@ public class ItemDAO {
 		log.trace("App has entered getItems.");
 		log.debug("getItems Parameters: category: " + category + ", onlyInStock: " + onlyInStock);
 		ArrayList<Item> retList = new ArrayList<Item>(); // Initialize a new list to return.
-		if (category != null) { //If the category passed in is null.
+		if (category != null) { // If the category passed in is null.
 			for (Item item : inventory) { // Loop through each item in the inventory
 				// If the item belongs to the correct category and is either in stock or
 				// onlyInStock is false.
@@ -87,20 +90,17 @@ public class ItemDAO {
 		log.debug("App is returning List<Item>: " + retList);
 		return retList; // Return the list.
 	}
-	
-	/**
-	 * Save to the inventory file.
-	 */
-	public void writeToFile() {
-		log.trace("App has entered writeToFile.");
-		new Serializer<Item>().writeObjectsToFile(inventory, filename);
-		log.trace("App is exiting writeToFile");
-	}
 
+	/**
+	 * Add an item to the inventory
+	 * 
+	 * @param item The item being added to the inventory
+	 * @return The item added to inventory.
+	 */
 	public Item addItem(Item item) {
 		log.trace("App has entered addItem.");
 		log.debug("addItem parameters: item: " + item);
-		if (item == null) { //If item is null, return false.
+		if (item == null) { // If item is null, return null.
 			log.warn("App tried to enter a null Item.");
 			log.trace("App is now exiting addItem.");
 			log.debug("addItem is returning Item: " + null);
@@ -113,6 +113,15 @@ public class ItemDAO {
 		log.trace("App is now exiting addItem.");
 		log.debug("addItem is returning Item: " + item);
 		return item;
-		
+
+	}
+
+	/**
+	 * Save to the inventory file.
+	 */
+	public void writeToFile() {
+		log.trace("App has entered writeToFile.");
+		new Serializer<Item>().writeObjectsToFile(inventory, filename);
+		log.trace("App is exiting writeToFile");
 	}
 }

@@ -128,6 +128,9 @@ public class UserService {
 		return userList;
 	}
 	
+	/**
+	 * Used to update the sales in carts if a sale ended or a sale is going on
+	 */
 	public void updateSalesInCarts() {
 		UserDAO.checkSalesInCarts();
 	}

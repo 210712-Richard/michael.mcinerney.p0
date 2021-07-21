@@ -89,6 +89,10 @@ public class User implements Serializable{
 	}
 	
 	public void addToCart(Item item, int quantity, double price) {
+		//item can't be null, and neither quantity nor price can be negative or zero
+		if (item == null || quantity <= 0 || price <= 0.0) {
+			return;
+		}
 		cart.add(new CartItem(item, quantity, price));
 	}
 	

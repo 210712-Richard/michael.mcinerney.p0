@@ -47,6 +47,15 @@ public class UserDAO {
 	}
 
 	/**
+	 * Get the list of users
+	 * 
+	 * @return The list of users
+	 */
+	public List<User> getUsers() {
+		return users;
+	}
+
+	/**
 	 * Get the user based on the username and password
 	 * 
 	 * @param username The username of the User to get
@@ -74,58 +83,6 @@ public class UserDAO {
 		log.trace("App is now leaving getUser.");
 		log.debug("getUser is returning User: " + null);
 		return null; // Returns null if no matching user was found.
-	}
-
-	/**
-	 * Used to update all the items in the users' cart to make sure the price is
-	 * correct
-	 */
-	public static void checkSalesInCarts() {
-		log.trace("App is now in checkSalesInCarts");
-		
-		//Will be used to filter orders for carts that need to be edited.
-		Predicate<CartItem> cartPred = (c) -> 
-			//If the item price and the cart price do not match
-			(c.getItem().getPrice() != c.getPrice()) ||
-			//Or the cart item has a sale and the price in the cart doesn't match the sale price.
-			(c.getItem().getSale() != null 
-				&& c.getItem().getSale().getSalePrice() != c.getPrice());
-		
-		users.stream().filter((u) -> u.getCart() != null) // Filter through all users with a cart
-				.forEach((u) -> { // Loop through the filtered users
-					u.getCart().stream() // Get a stream for the user cart
-							//Filter using the predicate
-							.filter(cartPred)
-							.forEach((c) -> { //Loop through the filtered cart items
-								// If the sale has past its endDate or if the sale was removed
-								if (c.getItem().getSale() == null
-										|| c.getItem().getSale().getEndDate().isBefore(LocalDate.now())) {
-									log.debug(
-											u.getUsername() + " has item " + c.getItem().getName() + " being changed.");
-									c.getItem().setSale(null); // Set the sale to null
-									log.debug("Item in CartItem has been set to " + c.getItem().getSale());
-									c.setPrice(c.getItem().getPrice()); // Set the price in the cart to the item's
-																		// actual price
-									log.debug("CartItem price has been set to " + c.getPrice());
-								}
-								// This means the sale price was not set to the items in the cart yet
-								else {
-									// Set the price in the cart to the item's sale price
-									c.setPrice(c.getItem().getSale().getSalePrice());
-									log.debug("CartItem price has been set to " + c.getPrice());
-								}
-							});
-				});
-		log.trace("App is now exiting checkSalesInCarts");
-	}
-
-	/**
-	 * Save the current list of users to the file
-	 */
-	public void writeToFile() {
-		log.trace("App is now in writeToFile.");
-		new Serializer<User>().writeObjectsToFile(users, filename); // Call the serializer to write to the file
-		log.trace("App is exiting writeToFile.");
 	}
 
 	/**
@@ -185,11 +142,53 @@ public class UserDAO {
 	}
 
 	/**
-	 * Get the list of users
-	 * 
-	 * @return The list of users
+	 * Used to update all the items in the users' cart to make sure the price is
+	 * correct
 	 */
-	public List<User> getUsers() {
-		return users;
+	public static void checkSalesInCarts() {
+		log.trace("App is now in checkSalesInCarts");
+
+		// Will be used to filter orders for carts that need to be edited.
+		Predicate<CartItem> cartPred = (c) ->
+		// If the item price and the cart price do not match
+		(c.getItem().getPrice() != c.getPrice()) ||
+		// Or the cart item has a sale and the price in the cart doesn't match the sale
+		// price.
+				(c.getItem().getSale() != null && c.getItem().getSale().getSalePrice() != c.getPrice());
+
+		users.stream().filter((u) -> u.getCart() != null) // Filter through all users with a cart
+				.forEach((u) -> { // Loop through the filtered users
+					u.getCart().stream() // Get a stream for the user cart
+							// Filter using the predicate
+							.filter(cartPred).forEach((c) -> { // Loop through the filtered cart items
+								// If the sale has past its endDate or if the sale was removed
+								if (c.getItem().getSale() == null
+										|| c.getItem().getSale().getEndDate().isBefore(LocalDate.now())) {
+									log.debug(
+											u.getUsername() + " has item " + c.getItem().getName() + " being changed.");
+									c.getItem().setSale(null); // Set the sale to null
+									log.debug("Item in CartItem has been set to " + c.getItem().getSale());
+									c.setPrice(c.getItem().getPrice()); // Set the price in the cart to the item's
+																		// actual price
+									log.debug("CartItem price has been set to " + c.getPrice());
+								}
+								// This means the sale price was not set to the items in the cart yet
+								else {
+									// Set the price in the cart to the item's sale price
+									c.setPrice(c.getItem().getSale().getSalePrice());
+									log.debug("CartItem price has been set to " + c.getPrice());
+								}
+							});
+				});
+		log.trace("App is now exiting checkSalesInCarts");
+	}
+
+	/**
+	 * Save the current list of users to the file
+	 */
+	public void writeToFile() {
+		log.trace("App is now in writeToFile.");
+		new Serializer<User>().writeObjectsToFile(users, filename); // Call the serializer to write to the file
+		log.trace("App is exiting writeToFile.");
 	}
 }
