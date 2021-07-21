@@ -1,11 +1,15 @@
 package com.revature.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.revature.beans.AccountType;
+import com.revature.beans.CartItem;
+import com.revature.beans.Order;
+import com.revature.beans.OrderStatus;
 import com.revature.beans.User;
 import com.revature.data.UserDAO;
 
@@ -127,5 +131,52 @@ public class UserService {
 		log.debug("searchUserByName is returning List<User>: " + userList);
 		return userList;
 	}
-	
+
+	public void addToCart(User activeUser, int itemId, int quantity, double price) {
+		// Use a stream to see if the item is already in the cart. Null otherwise.
+		CartItem inCart = activeUser.getCart().stream()
+				.filter(c -> c.getItemId() == itemId)
+				.findFirst()
+				.orElse(null);
+
+		// The item was not in the cart
+		if (inCart == null) {
+			activeUser.addToCart(itemId, quantity, price);
+		}
+		// The item is in the cart
+		else {
+			inCart.setQuantity(quantity + inCart.getQuantity());
+			log.debug("User changed the quantity to " + inCart.getQuantity());
+		}
+
+		log.debug(activeUser.getUsername() + " now has a cart of " + activeUser.getCart());
+
+		ud.writeToFile();
+		
+	}
+
+	public void createOrder(User activeUser) {
+		activeUser.createOrder(); // Creates the order inside User bean
+		ud.writeToFile();
+	}
+
+	public void changeActiveStatus(User activeUser, boolean status) {
+		activeUser.setActive(status);
+		if (!activeUser.getCart().isEmpty()) {
+			activeUser.setCart(new ArrayList<CartItem>()); // Empty the cart.
+		}
+		ud.writeToFile();
+	}
+
+	public void changeQuantityInCart(CartItem cartItem, int quantity) {
+		cartItem.setQuantity(quantity);
+		ud.writeToFile();
+		
+	}
+
+	public void changeOrderStatus(Order order, OrderStatus status) {
+		order.setStatus(status);
+		ud.writeToFile();
+		
+	}
 }

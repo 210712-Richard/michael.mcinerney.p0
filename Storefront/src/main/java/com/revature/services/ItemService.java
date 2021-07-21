@@ -1,5 +1,6 @@
 package com.revature.services;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -7,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
+import com.revature.beans.Sale;
 import com.revature.data.ItemDAO;
 
 
@@ -99,5 +101,44 @@ public class ItemService {
 		log.trace("App is exiting addItem.");
 		log.debug("addItem returning Item: " + retItem);
 		return retItem;
+	}
+	
+	/**
+	 * Returns items back to the inventory
+	 * @param itemId The ID of the item
+	 * @param quantity The quantity being put back
+	 */
+	public void addAmountToInventory(int itemId, int quantity) {
+		log.trace("User has entered addAmountoInventory");
+		log.debug("addAmountToInventory parameters: itemId: " + itemId + ", quantity: " + quantity);
+		Item item = iDAO.getItem(itemId);
+		if (item != null) {
+			item.setAmountInInventory(item.getAmountInInventory() + quantity);
+			iDAO.writeToFile();
+		}
+		
+		log.trace("User is exiting addAmountToInventory.");
+	}
+	public void removeAmountFromInventory(int itemId, int quantity) {
+		Item item = iDAO.getItem(itemId);
+		if (item != null) {
+			item.setAmountInInventory(item.getAmountInInventory() - quantity);
+			iDAO.writeToFile();
+		}
+		
+	}
+	public void endSale(Item item) {
+		item.setSale(null);
+		iDAO.writeToFile();
+	}
+	public void setSale(Item item, LocalDate endDate, double price) {
+		item.setSale(new Sale(endDate, price));
+		log.debug("saleItem sale has been set to " + item.getSale());
+		iDAO.writeToFile();
+	}
+	public void changeAmount(Item item, int newQuantity) {
+		item.setAmountInInventory(newQuantity);
+		log.debug("item amountInInventory changed to " + item.getAmountInInventory());
+		iDAO.writeToFile();
 	}
 }
