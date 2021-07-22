@@ -179,4 +179,11 @@ public class UserService {
 		ud.writeToFile();
 		
 	}
+
+	public void changeCartItemPrice(CartItem cartItem, double price) {
+		cartItem.setPrice(price);
+		ud.writeToFile();
+	}
+	
+	
 }

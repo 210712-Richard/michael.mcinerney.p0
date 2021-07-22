@@ -979,7 +979,7 @@ public class Menu {
 			else { //Display the item price and update the cart item with the price
 				Item item = is.getItem(cartItem.getItemId());
 				price = ((item.getSale() == null) ? item.getPrice() : item.getSale().getSalePrice());
-				cartItem.setPrice(price);
+				us.changeCartItemPrice(cartItem, price);
 			}
 			// Add an extra tab for formatting or the number if it is a cart we're seeing.
 			String print = isOrderList ? "\t" : Integer.toString(i + 1) + ". ";
@@ -987,7 +987,7 @@ public class Menu {
 			System.out.println(extraTab + "\tUnit Price: $" + priceFormat.format(price));
 			System.out.println(extraTab + "\tQuantity In Cart: " + cartItem.getQuantity() + "\n");
 
-			total += price * cartItem.getQuantity(); // Add to the total
+			total = price * cartItem.getQuantity(); // Add to the total
 			log.debug("Current total of the cart: " + total);
 		} // Printing the total
 		System.out.println(extraTab + "Total: $" + priceFormat.format(total));
