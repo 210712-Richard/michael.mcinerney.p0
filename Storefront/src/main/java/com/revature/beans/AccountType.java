@@ -9,6 +9,7 @@ public enum AccountType implements Serializable{
 	/**
 	 * Customers can order items and modify the items in their cart, but not the ones out of their cart
 	 */
+	
 	CUSTOMER,
 	/**
 	 * Managers can edit item prices and item quantities, add sales, and deactivate user accounts
@@ -17,5 +18,6 @@ public enum AccountType implements Serializable{
 	/**
 	 * Administrators can create and deactivate manager accounts
 	 */
+	
 	ADMINISTRATOR
 }

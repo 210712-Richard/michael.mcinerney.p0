@@ -23,5 +23,7 @@ public class Driver {
 		UserController userControl = new UserController();
 		
 		app.post("/users", userControl::login);
+		
+		app.put("/users/:username", userControl::register);
 	}
 }

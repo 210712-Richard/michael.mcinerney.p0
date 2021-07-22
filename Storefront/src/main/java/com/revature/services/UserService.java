@@ -67,7 +67,7 @@ public class UserService {
 	 * Checks to see if the user's desired username has been registered or not
 	 * 
 	 * @param username The username the user wants to register with
-	 * @return false if the username has already been registers, true otherwise
+	 * @return false if the username has already been registered, true otherwise
 	 */
 	public Boolean isUsernameUnique(String username) {
 		log.trace("App has entered isUsernameUnique.");
