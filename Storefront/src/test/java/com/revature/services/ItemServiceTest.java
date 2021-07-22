@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -15,12 +16,13 @@ import org.mockito.Mockito;
 
 import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
+import com.revature.beans.Sale;
 import com.revature.data.ItemDAO;
 import com.revature.util.MockitoHelper;
 
 public class ItemServiceTest {
 	private ItemService service;
-	private Item item;
+	private static Item item;
 
 	private static MockitoHelper<ItemDAO> mock; // Used to create the mock used for the ItemDAO.
 	private ItemDAO dao; // Used to verify ItemDAO methods are called.
@@ -28,12 +30,13 @@ public class ItemServiceTest {
 	@BeforeAll
 	public static void beforeStart() {
 		mock = new MockitoHelper<ItemDAO>(ItemDAO.class);
+		item = new Item(0, "PC Desktop", 2000.00, 5, ItemCategory.DESKTOP_COMPUTER, "A Windows 10 personal computer.");
+
 	}
 
 	@BeforeEach
 	public void beforeTests() {
 		service = new ItemService();
-		item = new Item(0, "PC Desktop", 2000.00, 5, ItemCategory.DESKTOP_COMPUTER, "A Windows 10 personal computer.");
 
 	}
 
@@ -186,7 +189,7 @@ public class ItemServiceTest {
 	public void testGetItem() {
 		int id = item.getId();
 		Item retItem = service.getItem(id);
-		assertEquals(item, retItem, "Assert that the item returned equals the one with the id that was passed in.");
+		assertEquals(item.getId(), retItem.getId(), "Assert that the item returned equals the one with the id that was passed in.");
 		
 		Item nullItem = service.getItem(-1);
 		assertNull("Assert that an invalid id results in a null Item.", nullItem);
@@ -202,13 +205,7 @@ public class ItemServiceTest {
 	}
 	
 	@Test
-	public void testAddAmountToInventoryReturns() {
-		//quantity adds that much to item's inventory
-		//incorrect itemId or negative quantity results in nothing happening
-	}
-	
-	@Test
-	public void testAddAmountToInventoryCallsMethods() {
+	public void testAddAmountToInventory() {
 		//Mockito verification for getItem and writeToFile
 		dao = mock.setPrivateMock(service, "iDAO");
 		service.addAmountToInventory(item.getId(), 1);
@@ -221,15 +218,7 @@ public class ItemServiceTest {
 	}
 	
 	@Test
-	public void testRemoveAmountFromInventoryReturns() {
-		//quantity subtracts that much to item's inventory
-		//incorrect itemId or negative or bigger than item amount quantity results in nothing happening
-		//Mockito verification for getItem and writeToFile
-	}
-	
-	@Test
-	public void testRemoveAmountFromInventoryCallsMethods() {
-		//Mockito verification for getItem and writeToFile
+	public void testRemoveAmountFromInventory() {
 		//Mockito verification for getItem and writeToFile
 				dao = mock.setPrivateMock(service, "iDAO");
 				service.removeAmountFromInventory(item.getId(), 1);
@@ -243,22 +232,48 @@ public class ItemServiceTest {
 	
 	@Test
 	public void testEndSale() {
-		//Items sale is set to null
-		//Null items nothing happens
-		//Mockito verification for writeToFile
+		dao = mock.setPrivateMock(service, "iDAO");
+		item.setSale(new Sale());
+		service.endSale(item);
+		
+		Mockito.verify(dao).writeToFile();
+		
+		assertNull("Assert that the Sale was set to null", item.getSale());
 	}
 	
 	@Test
 	public void testSetSale() {
-		//item creates and sets a sale using date and price
-		//null item or 0 and zero or negative price results in nothing happening
-		//Mockito verification for writeToFile
+		dao = mock.setPrivateMock(service, "iDAO");
+		double price = 20.00;
+		LocalDate endDate = LocalDate.now();
+		service.setSale(item, endDate, price);
+		
+		Mockito.verify(dao).writeToFile();
+		
+		assertEquals(price, item.getSale().getSalePrice(), "Assert that the sale price set is the same as the one entered.");
+		assertEquals(endDate, item.getSale().getEndDate(), "Assert that the end date set is the same as the one entered");
+		
+		item.setSale(null);
+		service.setSale(item, null, price);
+		assertNull("Assert that the Sale was set to null with a null date", item.getSale());
+		
+		service.setSale(item, endDate, 0.0);
+		assertNull("Assert that the Sale was set to null with a 0.0 price", item.getSale());
+
 	}
 	
 	@Test
 	public void testChangeAmount() {
-		//quantity is used for item's inventory
-		//null item or negative quantity results in nothing happening
-		//Mockito verification for writeToFile
+		dao = mock.setPrivateMock(service, "iDAO");
+		int newQuantity = 10;
+		service.changeAmount(item, newQuantity);
+		
+		assertEquals(item.getAmountInInventory(), newQuantity, "Assert that the amount in inventory is the same as the one entered.");
+		
+		Mockito.verify(dao).writeToFile();
+		
+		service.changeAmount(item, -1);
+		assertEquals(item.getAmountInInventory(), newQuantity, "Assert that the amount in inventory did not change with invalid quantity.");
+
 	}
 }
