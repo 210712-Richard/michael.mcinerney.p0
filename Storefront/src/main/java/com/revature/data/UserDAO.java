@@ -100,6 +100,35 @@ public class UserDAO {
 		log.debug("getUser is returning User: " + null);
 		return null; // Returns null if no matching user was found.
 	}
+	
+	/**
+	 * Get the user based on the username
+	 * 
+	 * @param username The username of the User to get
+	 * @return The User with the same username and password
+	 */
+	public User getUser(String username) {
+		log.trace("App has entered getUser.");
+		log.debug("getUser Parameters: username: " + username);
+		// if the username is null or blank
+		if (username == null) {
+			log.warn("The username and/or password is null or empty");
+			log.trace("App is leaving getUser");
+			log.debug("getUser is returning " + null);
+			return null;
+		}
+		for (User u : users) { // Iterate through each User
+			// If the username of a User is the same as the parameters
+			if (username.equals(u.getUsername())) {
+				log.trace("App is now leaving getUser.");
+				log.debug("getUser is returning User: " + u);
+				return u; // Return the correct User
+			}
+		}
+		log.trace("App is now leaving getUser.");
+		log.debug("getUser is returning User: " + null);
+		return null; // Returns null if no matching user was found.
+	}
 
 	/**
 	 * Creates a new User and adds it to the list

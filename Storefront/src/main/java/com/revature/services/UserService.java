@@ -62,6 +62,16 @@ public class UserService {
 		log.debug("register is returning User: " + u);
 		return u; // Return the new user object.
 	}
+	
+	public User getUser(String username) {
+		log.trace("App is now in getUser.");
+		log.debug("getUser parameters: username: " + username);
+		
+		User retUser = ud.getUser(username, username);
+		log.trace("App is exiting getUser");
+		log.debug("getUser returning User: " + retUser);
+		return retUser;
+	}
 
 	/**
 	 * Checks to see if the user's desired username has been registered or not

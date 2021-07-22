@@ -72,6 +72,11 @@ public class UserController {
 				return;
 			}
 			
+			//If
+			if (!newUser.getAccountType().equals(AccountType.CUSTOMER) 
+				&& !(loggedUser == null || !loggedUser.getAccountType().equals(AccountType.ADMINISTRATOR))) {
+				
+			}
 			//Register the user
 			newUser = userService.register(newUser.getUsername(), newUser.getPassword(), newUser.getEmail(), newUser.getAccountType());
 			log.debug("newUser: " + newUser);
