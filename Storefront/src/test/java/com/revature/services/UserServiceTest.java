@@ -279,5 +279,48 @@ public class UserServiceTest {
 
 	}
 	
+	@Test
+	public void testAddToCart() {
+		//Test if CartItem gets added to cart
+		//Use Mockito to make sure writeToFile is called
+		//Make sure 0.0 price and 0 quantity don't add the item to cart
+	}
+	
+	@Test
+	public void testCreateOrder() {
+		//Make sure the user passed in creates the order
+		//Make sure empty cart does not create an order
+		//Mockito verification for writeToFile
+	}
+	
+	@Test
+	public void testChangeActiveStatus() {
+		//Make sure passed in user gets the passed in status
+		//If user is being deactivated and has a cart, cart should be emptied
+		//Null user does not throw exception, just returns
+		//Mockito verification for writeToFile
+	}
+	
+	@Test
+	public void testChangeQuantityInCart() {
+		//Make sure quantity passed in changes user's cart
+		//Null user and zero or negative quantity doesn't do anything
+		//Mockito verification for writeToFile
+		
+	}
+	
+	@Test
+	public void testChangeOrderStatus() {
+		//status changes for user
+		//Null user and null status changes nothing
+		//Mockito verification for writeToFile
+	}
+	
+	@Test
+	public void testChangeCartItemPrice() {
+		//price changes for cartItem
+		//Null CartItem and negative or zero price changes nothing
+		//Mockito verification for writeToFile
+	}
 
 }

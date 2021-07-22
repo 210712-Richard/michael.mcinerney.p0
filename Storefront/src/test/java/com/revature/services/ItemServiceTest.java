@@ -200,4 +200,65 @@ public class ItemServiceTest {
 		
 		assertEquals(id, captor.getValue(), "Assert that the number passed in is the same");
 	}
+	
+	@Test
+	public void testAddAmountToInventoryReturns() {
+		//quantity adds that much to item's inventory
+		//incorrect itemId or negative quantity results in nothing happening
+	}
+	
+	@Test
+	public void testAddAmountToInventoryCallsMethods() {
+		//Mockito verification for getItem and writeToFile
+		dao = mock.setPrivateMock(service, "iDAO");
+		service.addAmountToInventory(item.getId(), 1);
+		
+		ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass(Integer.class);
+		Mockito.verify(dao).getItem(captor.capture());
+		Mockito.verify(dao).writeToFile();
+		
+		assertEquals(captor.getValue(), item.getId(), "Assert that Id passed in is the same as the one used to get item");
+	}
+	
+	@Test
+	public void testRemoveAmountFromInventoryReturns() {
+		//quantity subtracts that much to item's inventory
+		//incorrect itemId or negative or bigger than item amount quantity results in nothing happening
+		//Mockito verification for getItem and writeToFile
+	}
+	
+	@Test
+	public void testRemoveAmountFromInventoryCallsMethods() {
+		//Mockito verification for getItem and writeToFile
+		//Mockito verification for getItem and writeToFile
+				dao = mock.setPrivateMock(service, "iDAO");
+				service.removeAmountFromInventory(item.getId(), 1);
+				
+				ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass(Integer.class);
+				Mockito.verify(dao).getItem(captor.capture());
+				Mockito.verify(dao).writeToFile();
+				
+				assertEquals(captor.getValue(), item.getId(), "Assert that Id passed in is the same as the one used to get item");
+	}
+	
+	@Test
+	public void testEndSale() {
+		//Items sale is set to null
+		//Null items nothing happens
+		//Mockito verification for writeToFile
+	}
+	
+	@Test
+	public void testSetSale() {
+		//item creates and sets a sale using date and price
+		//null item or 0 and zero or negative price results in nothing happening
+		//Mockito verification for writeToFile
+	}
+	
+	@Test
+	public void testChangeAmount() {
+		//quantity is used for item's inventory
+		//null item or negative quantity results in nothing happening
+		//Mockito verification for writeToFile
+	}
 }

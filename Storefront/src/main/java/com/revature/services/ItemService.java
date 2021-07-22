@@ -112,33 +112,42 @@ public class ItemService {
 		log.trace("User has entered addAmountoInventory");
 		log.debug("addAmountToInventory parameters: itemId: " + itemId + ", quantity: " + quantity);
 		Item item = iDAO.getItem(itemId);
-		if (item != null) {
+		if (item != null && quantity >= 0) {
 			item.setAmountInInventory(item.getAmountInInventory() + quantity);
-			iDAO.writeToFile();
+			
 		}
-		
+		iDAO.writeToFile();
 		log.trace("User is exiting addAmountToInventory.");
 	}
 	public void removeAmountFromInventory(int itemId, int quantity) {
 		Item item = iDAO.getItem(itemId);
-		if (item != null) {
+		if (item != null && quantity > 0 && quantity <= item.getAmountInInventory()) {
 			item.setAmountInInventory(item.getAmountInInventory() - quantity);
+			
+		}
+		iDAO.writeToFile();
+	}
+	public void endSale(Item item) {
+		if (item != null) {
+			item.setSale(null);
 			iDAO.writeToFile();
 		}
 		
 	}
-	public void endSale(Item item) {
-		item.setSale(null);
-		iDAO.writeToFile();
-	}
 	public void setSale(Item item, LocalDate endDate, double price) {
-		item.setSale(new Sale(endDate, price));
-		log.debug("saleItem sale has been set to " + item.getSale());
-		iDAO.writeToFile();
+		if (item != null && endDate != null && price > 0.0) {
+			item.setSale(new Sale(endDate, price));
+			log.debug("saleItem sale has been set to " + item.getSale());
+			iDAO.writeToFile();
+		}
+		
 	}
 	public void changeAmount(Item item, int newQuantity) {
-		item.setAmountInInventory(newQuantity);
-		log.debug("item amountInInventory changed to " + item.getAmountInInventory());
-		iDAO.writeToFile();
+		if (item != null && newQuantity >= 0) {
+			item.setAmountInInventory(newQuantity);
+			log.debug("item amountInInventory changed to " + item.getAmountInInventory());
+			iDAO.writeToFile();
+		}
+		
 	}
 }
