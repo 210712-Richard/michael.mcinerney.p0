@@ -143,13 +143,22 @@ public class UserService {
 		log.debug("searchUserByName is returning List<User>: " + userList);
 		return userList;
 	}
-
+	
+	/**
+	 * Adds an item to the user's cart
+	 * @param activeUser The user adding the item
+	 * @param itemId The Id of the item
+	 * @param quantity How much of the item is going into the cart
+	 * @param price The current price of the item
+	 */
 	public void addToCart(User activeUser, int itemId, int quantity, double price) {
-		
-		if (quantity > 0 && price > 0) {
+		log.trace("App has entered addToCart.");
+		log.debug("addToCart Parameters: activeUser: " + activeUser + ", itemId: " + itemId + ", quantity: "
+				+ quantity + ", price: " + price);
+		if (quantity > 0 && price > 0 && activeUser != null) {
 			// Use a stream to see if the item is already in the cart. Null otherwise.
 			CartItem inCart = activeUser.getCart().stream().filter(c -> c.getItemId() == itemId).findFirst().orElse(null);
-	
+			log.debug("Cart item was found in cart: " + inCart);
 			// The item was not in the cart
 			if (inCart == null) {
 				activeUser.addToCart(itemId, quantity, price);
@@ -163,54 +172,111 @@ public class UserService {
 			log.debug(activeUser.getUsername() + " now has a cart of " + activeUser.getCart());
 	
 			ud.writeToFile();
+			log.trace("App has returned to addToCart.");
 		}
-		
+		log.trace("App is exiting addToCart.");
 
 	}
-
+	/**
+	 * Creates the order for the user from their cart
+	 * @param activeUser The user creating the order
+	 */
 	public void createOrder(User activeUser) {
+		log.trace("App has entered createOrder.");
+		log.debug("createOrder Parameters: activeUser: " + activeUser);
+		
+		//Makes sure the user actually has something inside their cart
 		if (!activeUser.getCart().isEmpty()) {
 			activeUser.createOrder(); // Creates the order inside User bean
 			ud.writeToFile();
+			log.trace("App has returned to createOrder.");
 		}
-
+		log.trace("App is exiting createOrder.");
 	}
-
+	
+	/**
+	 * Changes the active status of the user
+	 * @param activeUser The user
+	 * @param status The status the user is being changed to
+	 */
 	public void changeActiveStatus(User activeUser, boolean status) {
+		log.trace("App has entered changeActiveStatus.");
+		log.debug("changeActiveStatus Parameters: activeUser: " + activeUser + ", status: " + status);
+		
+		//If the user entered is not null
 		if (activeUser != null) {
 			activeUser.setActive(status);
+			log.debug("User status has changed to " + activeUser.isActive());
+			
+			//If the user has stuff in their cart, this will empty their cart
 			if (!activeUser.getCart().isEmpty()) {
 				activeUser.setCart(new ArrayList<CartItem>()); // Empty the cart.
+				log.debug("User status has changed to " + activeUser.getCart());
 			}
 			ud.writeToFile();
-		}
-		
-	}
+			log.trace("App has returned to changeActiveStatus.");
 
-	public void changeQuantityInCart(CartItem cartItem, int quantity) {
+		}
+		log.trace("App is exiting changeActiveStatus.");
+	}
+	
+	/**
+	 * Changes the quantity to the cartItem to the one specified
+	 * @param cartItem The CartItem being changed
+	 * @param quantity The quantity to change to
+	 */
+	public void changeQuantityInCart(CartItem cartItem, int quantity) {		
+		log.trace("App has entered changeQuantityInCart.");
+		log.debug("changeQuantityInCart Parameters: cartItem: " + cartItem + ", quantity: " + quantity);
+		
+		//The CartItem passed in isn't null and the quantity is greater than zero
 		if (cartItem != null && quantity > 0) {
-			cartItem.setQuantity(quantity);
+			cartItem.setQuantity(quantity); //Set the quantity
+			log.debug("cartItem quantity is now " + cartItem.getQuantity());
 			ud.writeToFile();
+			log.trace("App has returned to changeQuantityInCart.");
+
 		}
-		
-
+		log.trace("App is exiting changeQuantityInCart.");
 	}
-
+	
+	/**
+	 * Changes the OrderStatus of a specified Order
+	 * @param order The Order being modified
+	 * @param status The OrderStatus the Order is setting
+	 */
 	public void changeOrderStatus(Order order, OrderStatus status) {
+		log.trace("App has entered changeOrderStatus.");
+		log.debug("changeOrderStatus Parameters: order: " + order + ", status: " + status);
+		
+		//If the order and status are not null
 		if (order != null && status != null) {
-			order.setStatus(status);
+			order.setStatus(status); //Changes the status
+			log.debug("order status is now " + order.getStatus());
 			ud.writeToFile();
+			log.trace("App has returned to changeOrderStatus.");
 		}
-		
-
+		log.trace("App is exiting changeOrderStatus.");
 	}
-
+	
+	/**
+	 * Changes the CartItem price to the one specified
+	 * @param cartItem The CartItem being modified
+	 * @param price The price the CartItem is being set to
+	 */
 	public void changeCartItemPrice(CartItem cartItem, double price) {
-		if (cartItem != null && price > 0.0) {
-			cartItem.setPrice(price);
-			ud.writeToFile();
-		}
+		log.trace("App has entered changeCartItemPrice.");
+		log.debug("changeCartItemPrice Parameters: cartItem: " + cartItem + ", price: " + price);
 		
+		//If the cart item passed in wasn't and null and the price is greater than zero
+		if (cartItem != null && price > 0.0) {
+			cartItem.setPrice(price); //Set the price
+			log.debug("cartItem price is now " + cartItem.getPrice());
+			ud.writeToFile();
+			log.trace("App has returned to changeCartItemPrice.");
+
+		}
+		log.trace("App is exiting changeCartItemPrice.");
 	}
 
 }
