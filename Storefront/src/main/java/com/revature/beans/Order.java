@@ -11,16 +11,18 @@ public class Order implements Serializable{
 	private LocalDate orderDate;
 	private LocalDate shipDate;
 	private OrderStatus status;
+	private double total;
 	
 	public Order() {
 		super();
 		status = OrderStatus.ORDERED;
 	}
-	public Order(List<CartItem> itemsOrdered, LocalDate orderDate, LocalDate shipDate) {
+	public Order(List<CartItem> itemsOrdered, LocalDate orderDate, LocalDate shipDate, double total) {
 		this();
 		this.itemsOrdered = itemsOrdered;
 		this.orderDate = orderDate;
 		this.shipDate = shipDate;
+		this.total = total;
 	}
 	public List<CartItem> getItemsOrdered() {
 		return itemsOrdered;
@@ -46,9 +48,18 @@ public class Order implements Serializable{
 	public void setStatus(OrderStatus status) {
 		this.status = status;
 	}
+	public double getTotal() {
+		return total;
+	}
+	public void setTotal(double total) {
+		this.total = total;
+	}
+	public void setShipDate(LocalDate shipDate) {
+		this.shipDate = shipDate;
+	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(itemsOrdered, orderDate, shipDate, status);
+		return Objects.hash(itemsOrdered, orderDate, shipDate, status, total);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -60,12 +71,13 @@ public class Order implements Serializable{
 			return false;
 		Order other = (Order) obj;
 		return Objects.equals(itemsOrdered, other.itemsOrdered) && Objects.equals(orderDate, other.orderDate)
-				&& Objects.equals(shipDate, other.shipDate) && status == other.status;
+				&& Objects.equals(shipDate, other.shipDate) && status == other.status
+				&& Double.doubleToLongBits(total) == Double.doubleToLongBits(other.total);
 	}
 	@Override
 	public String toString() {
-		return "Order [itemsOrdered=" + itemsOrdered + ", orderDate=" + orderDate + ", shippedDate=" + shipDate
-				+ ", status=" + status + "]";
+		return "Order [itemsOrdered=" + itemsOrdered + ", orderDate=" + orderDate + ", shipDate=" + shipDate
+				+ ", status=" + status + ", total=" + total + "]";
 	}
 	
 }

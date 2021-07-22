@@ -1,5 +1,6 @@
 package com.revature.services;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -7,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
+import com.revature.beans.Sale;
 import com.revature.data.ItemDAO;
 
 
@@ -99,5 +101,106 @@ public class ItemService {
 		log.trace("App is exiting addItem.");
 		log.debug("addItem returning Item: " + retItem);
 		return retItem;
+	}
+	
+	/**
+	 * Returns items back to the inventory
+	 * @param itemId The ID of the item
+	 * @param quantity The quantity being put back
+	 */
+	public void addAmountToInventory(int itemId, int quantity) {
+		log.trace("User has entered addAmountoInventory");
+		log.debug("addAmountToInventory parameters: itemId: " + itemId + ", quantity: " + quantity);
+		Item item = iDAO.getItem(itemId); //Get the item using the itemId
+		
+		//If the item is not null and the quantity is a non-negative number
+		if (item != null && quantity >= 0) {
+			//Adds the quantity to the current amount in inventory
+			item.setAmountInInventory(item.getAmountInInventory() + quantity);
+		}
+		iDAO.writeToFile();
+		log.trace("User is exiting addAmountToInventory.");
+	}
+	
+	/**
+	 * Removes a specified amount from an item's inventory
+	 * @param itemId The ID of the item
+	 * @param quantity The quantity being taken out
+	 */
+	public void removeAmountFromInventory(int itemId, int quantity) {
+		log.trace("User has entered removeAmountFromInventory");
+		log.debug("removeAmountFromInventory parameters: itemId: " + itemId + ", quantity: " + quantity);
+		Item item = iDAO.getItem(itemId); //Get the actual item with the itemId
+		
+		//If the item is no not null, and the quantity is greater than zero but less than the current inventory
+		if (item != null && quantity > 0 && quantity <= item.getAmountInInventory()) {
+			
+			//Subtract the quantity from the amount in inventory already
+			item.setAmountInInventory(item.getAmountInInventory() - quantity);
+			log.debug("item quantity was set to " + item.getAmountInInventory());
+		}
+		iDAO.writeToFile();
+		log.trace("App has returned to removeAmountFromInventory.");
+		log.trace("App is exiting removeAmountFromInventory.");
+	}
+	
+	/**
+	 * Ends the sale of an Item
+	 * @param item The Item with the sale ending
+	 */
+	public void endSale(Item item) {
+		log.trace("User has entered endSale");
+		log.debug("endSale parameters: item: " + item);
+		
+		//If the item is not null
+		if (item != null) {
+			//Gets rid of the sale
+			item.setSale(null);
+			log.debug("item Sale has been set to " + item.getSale());
+		}
+		iDAO.writeToFile();
+		log.trace("App has returned to endSale.");
+		log.trace("App is exiting endSale.");
+	}
+	
+	/**
+	 * Adds a new sale to an Item
+	 * @param item The Item getting the sale
+	 * @param endDate The final date of the Sale
+	 * @param price The price of the item during the Sale
+	 */
+	public void setSale(Item item, LocalDate endDate, double price) {
+		log.trace("User has entered setSale");
+		log.debug("setSale parameters: item: " + item, ", endDate: ", endDate, ", price: ", price);
+		
+		//If the item is not null, the endDate is not null, and the price is greater than zero
+		if (item != null && endDate != null && price > 0.0) {
+			//Adds the sale
+			item.setSale(new Sale(endDate, price));
+			log.debug("saleItem sale has been set to " + item.getSale());
+		}
+		iDAO.writeToFile();
+		log.trace("App has returned to setSale.");
+		log.trace("App is exiting setSale.");
+	}
+	
+	/**
+	 * Changes the amount of an Item
+	 * @param item The Item being changed
+	 * @param newQuantity The quantity the Item is being set to
+	 */
+	public void changeAmount(Item item, int newQuantity) {
+		log.trace("User has entered changeAmount");
+		log.debug("endSale parameters: item: " + item, ", newQuantity: "+ newQuantity);
+		
+		//If the item is not null and is getting a non-negative quantity
+		if (item != null && newQuantity >= 0) {
+			//Sets the amount
+			item.setAmountInInventory(newQuantity);
+			log.debug("item amountInInventory changed to " + item.getAmountInInventory());
+		}
+		iDAO.writeToFile();
+		log.trace("App has returned to changeAmount.");
+		log.trace("App is exiting changeAmount.");
 	}
 }

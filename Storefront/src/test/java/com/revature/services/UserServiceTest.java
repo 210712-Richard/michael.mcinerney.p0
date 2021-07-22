@@ -14,6 +14,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.revature.beans.AccountType;
+import com.revature.beans.CartItem;
+import com.revature.beans.Order;
+import com.revature.beans.OrderStatus;
 import com.revature.beans.User;
 import com.revature.data.UserDAO;
 import com.revature.util.MockitoHelper;
@@ -22,13 +25,14 @@ public class UserServiceTest {
 	private UserService service = null;
 	private User user = null;
 	private UserDAO dao = null;
-	
-	private static MockitoHelper<UserDAO> mockHelper; //Sets up a Mock UserDAO for UserService for method verification.
-	
+
+	private static MockitoHelper<UserDAO> mockHelper; // Sets up a Mock UserDAO for UserService for method verification.
+
 	@BeforeAll
 	public static void beforeStart() {
 		mockHelper = new MockitoHelper<UserDAO>(UserDAO.class);
 	}
+
 	@BeforeEach
 	public void beforeTests() {
 		service = new UserService();
@@ -59,9 +63,8 @@ public class UserServiceTest {
 		service.isUsernameUnique(username);
 
 		Mockito.verify(dao).getUsers(); // Verifies that the getUsers function is called from
-																// UserDAO.
+										// UserDAO.
 		Mockito.verify(dao).writeToFile(); // Verifies that the writeToFile function is called from the UserDAO.
-
 
 	}
 
@@ -278,6 +281,149 @@ public class UserServiceTest {
 				"Assert that findUsersByName called with AccountType given.");
 
 	}
-	
+
+	@Test
+	public void testAddToCart() {
+		// Test if CartItem gets added to cart
+		dao = mockHelper.setPrivateMock(service, "ud");
+
+		int itemId = 0;
+		double price = 20.0;
+		int quantity = 5;
+		CartItem cartItem = new CartItem(itemId, quantity, price);
+		service.addToCart(user, itemId, quantity, price);
+
+		assertTrue(user.getCart().contains(cartItem), "Assert that the Item and it's properties are in the cart.");
+		// Use Mockito to make sure writeToFile is called
+		Mockito.verify(dao).writeToFile();
+
+		// Make sure the item is simply modified and the size of the cart does not
+		// change
+		int add = 10;
+		cartItem.setQuantity(cartItem.getQuantity() + add);
+		int size = user.getCart().size();
+		service.addToCart(user, itemId, add, price);
+		assertTrue(user.getCart().contains(cartItem), "Assert that the changes to the item were made and in the cart.");
+		assertEquals(user.getCart().size(), size,
+				"Assert that the size of the cart did not change when the same item was passed in.");
+
+		// Make sure 0.0 price and 0 quantity don't add the item to cart
+		CartItem zeroPrice = new CartItem(itemId, quantity, 0.0);
+		service.addToCart(user, itemId, quantity, 0.0);
+		assertFalse(user.getCart().contains(zeroPrice),
+				"Assert that a negative or zero price does not add the item to the cart.");
+
+		CartItem zeroQuantity = new CartItem(itemId, 0, price);
+		service.addToCart(user, itemId, 0, price);
+		assertFalse(user.getCart().contains(zeroQuantity),
+				"Assert that a negative or quantity price does not add the item to the cart.");
+	}
+
+	@Test
+	public void testCreateOrder() {
+		dao = mockHelper.setPrivateMock(service, "ud");
+
+		// Make sure the user passed in creates the order
+		user.addToCart(0, 10, 20.0); // Makes sure the cart isn't empty
+		service.createOrder(user);
+		assertFalse(user.getPastOrders().isEmpty(), "Assert that the cart was added to the orders.");
+
+		// Mockito verification for writeToFile
+		Mockito.verify(dao).writeToFile();
+
+		// Make sure empty cart does not create an order
+		int size = user.getPastOrders().size();
+		service.createOrder(user);
+		assertEquals(size, user.getPastOrders().size(), "Assert that the empty cart did not add to the orders.");
+	}
+
+	@Test
+	public void testChangeActiveStatus() {
+		dao = mockHelper.setPrivateMock(service, "ud");
+
+		// Make sure passed in user gets the passed in status
+		boolean status = false;
+		service.changeActiveStatus(user, status);
+		assertEquals(status, user.isActive(), "Assert that the user's status was changed.");
+
+		// Mockito verification for writeToFile
+		Mockito.verify(dao).writeToFile();
+
+		// If user is being deactivated and has a cart, cart should be emptied
+		user.addToCart(0, 10, 20.0); // Makes sure the cart isn't empty
+		service.changeActiveStatus(user, status);
+		assertTrue(user.getCart().isEmpty(), "Assert that the cart was empty before User was deactivated.");
+
+	}
+
+	@Test
+	public void testChangeQuantityInCart() {
+		dao = mockHelper.setPrivateMock(service, "ud");
+		// Make sure quantity passed in changes user's cart
+		int oldQuantity = 15;
+		int newQuantity = 20;
+		int itemId = 0;
+		double price = 10.0;
+
+		user.addToCart(itemId, oldQuantity, price);
+		CartItem item = user.getCart().get(0);
+		service.changeQuantityInCart(item, newQuantity);
+		assertEquals(item.getQuantity(), newQuantity, "Assert that the quantity changed to the new quantity.");
+		// Mockito verification for writeToFile
+		Mockito.verify(dao).writeToFile();
+
+		// Zero or negative quantity doesn't do anything
+		service.changeQuantityInCart(item, 0);
+		assertEquals(item.getQuantity(), newQuantity, "Assert that the quantity didn't change to the new quantity.");
+
+	}
+
+	@Test
+	public void testChangeOrderStatus() {
+		dao = mockHelper.setPrivateMock(service, "ud");
+		// status changes for user order
+		OrderStatus status = OrderStatus.CANCELLED;
+		int quantity = 15;
+		int itemId = 0;
+		double price = 10.0;
+
+		user.addToCart(itemId, quantity, price);
+		user.createOrder();
+
+		Order order = user.getPastOrders().get(0);
+		service.changeOrderStatus(order, status);
+		assertEquals(status, order.getStatus(), "Assert that the order status was changed.");
+
+		// Mockito verification for writeToFile
+		Mockito.verify(dao).writeToFile();
+
+		// /Null status changes nothing
+		service.changeOrderStatus(order, null);
+		assertEquals(status, order.getStatus(), "Assert that the order status was not changed to null.");
+
+
+	}
+
+	@Test
+	public void testChangeCartItemPrice() {
+		dao = mockHelper.setPrivateMock(service, "ud");
+		// Make sure price passed in changes user's cart
+		double oldPrice = 10.0;
+		double newPrice = 30.0;
+		int itemId = 0;
+		int quantity = 1;
+
+		user.addToCart(itemId, quantity, oldPrice);
+		CartItem item = user.getCart().get(0);
+		service.changeCartItemPrice(item, newPrice);
+		assertEquals(item.getPrice(), newPrice, "Assert that the price changed to the new price.");
+		// Mockito verification for writeToFile
+		Mockito.verify(dao).writeToFile();
+
+		// Zero or negative price doesn't do anything
+		service.changeCartItemPrice(item, 0.0);
+		assertEquals(item.getPrice(), newPrice, "Assert that the price didn't change to the new price.");
+
+	}
 
 }
