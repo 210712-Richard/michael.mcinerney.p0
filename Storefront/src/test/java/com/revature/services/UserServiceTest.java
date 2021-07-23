@@ -289,12 +289,11 @@ public class UserServiceTest {
 		// Test if CartItem gets added to cart
 		dao = mockHelper.setPrivateMock(service, "ud");
 
-		int itemId = 0;
 		double price = 20.0;
 		int quantity = 5;
-		Item item = new Item(0, "name", 20, 20, ItemCategory.COMPUTER_ACCESSORY,"desc");
+		Item item = new Item(0, "name", price, 20, ItemCategory.COMPUTER_ACCESSORY,"desc");
 		CartItem cartItem = new CartItem(0, item, quantity, price);
-		service.addToCart(user, item, quantity, price);
+		service.addToCart(user, item, quantity);
 
 		assertTrue(user.getCart().contains(cartItem), "Assert that the Item and it's properties are in the cart.");
 		// Use Mockito to make sure writeToFile is called
@@ -305,19 +304,15 @@ public class UserServiceTest {
 		int add = 10;
 		cartItem.setQuantity(cartItem.getQuantity() + add);
 		int size = user.getCart().size();
-		service.addToCart(user, item, add, price);
+		service.addToCart(user, item, add);
 		assertTrue(user.getCart().contains(cartItem), "Assert that the changes to the item were made and in the cart.");
 		assertEquals(user.getCart().size(), size,
 				"Assert that the size of the cart did not change when the same item was passed in.");
 
-		// Make sure 0.0 price and 0 quantity don't add the item to cart
-		CartItem zeroPrice = new CartItem(0, item, quantity, 0.0);
-		service.addToCart(user, item, quantity, 0.0);
-		assertFalse(user.getCart().contains(zeroPrice),
-				"Assert that a negative or zero price does not add the item to the cart.");
-
+		
+		//Make sure that can't pass in a zero quantity
 		CartItem zeroQuantity = new CartItem(0, item, 0, price);
-		service.addToCart(user, item, 0, price);
+		service.addToCart(user, item, 0);
 		assertFalse(user.getCart().contains(zeroQuantity),
 				"Assert that a negative or quantity price does not add the item to the cart.");
 	}

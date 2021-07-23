@@ -166,11 +166,13 @@ public class UserService {
 	 * @param quantity   How much of the item is going into the cart
 	 * @param price      The current price of the item
 	 */
-	public void addToCart(User activeUser, Item item, int quantity, double price) {
+	public void addToCart(User activeUser, Item item, int quantity) {
 		log.trace("App has entered addToCart.");
-		log.debug("addToCart Parameters: activeUser: " + activeUser + ", item: " + item + ", quantity: " + quantity
-				+ ", price: " + price);
-		if (item != null && quantity > 0 && price > 0 && activeUser != null) {
+		log.debug("addToCart Parameters: activeUser: " + activeUser + ", item: " + item + ", quantity: " + quantity);
+		if (item != null && quantity > 0 && activeUser != null) {
+			final double price = ((item.getSale() != null) ? item.getSale().getSalePrice()
+					: item.getPrice());
+			log.debug("price set to " + price);
 			// Use a stream to see if the item is already in the cart. Null otherwise.
 			CartItem inCart = activeUser.getCart().stream().filter(c -> c.getItem().getId() == item.getId()).findFirst()
 					.orElse(null);
@@ -186,7 +188,10 @@ public class UserService {
 			}
 
 			log.debug(activeUser.getUsername() + " now has a cart of " + activeUser.getCart());
-
+			itemDAO.removeAmountFromInventory(item.getId(), quantity);
+			log.trace("App has returned to addToCart.");
+			itemDAO.writeToFile();
+			log.trace("App has returned to addToCart.");
 			ud.writeToFile();
 			log.trace("App has returned to addToCart.");
 		}
@@ -229,6 +234,11 @@ public class UserService {
 
 			// If the user has stuff in their cart, this will empty their cart
 			if (!activeUser.getCart().isEmpty()) {
+				activeUser.getCart().stream()
+				// Loop through and increase each item inventory to
+				.forEach((cartItem) -> {
+					itemDAO.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
+				});
 				activeUser.setCart(new ArrayList<CartItem>()); // Empty the cart.
 				log.debug("User status has changed to " + activeUser.getCart());
 			}
@@ -292,17 +302,20 @@ public class UserService {
 		log.debug("removeFromCart Parameters: user: " + user + ", cartItemId: " + cartItemId);
 		if (user != null) {
 
-			CartItem cartItem = user.getCart().stream()
-					.filter((ci) -> (ci.getId() == cartItemId))
-					.findFirst()
+			CartItem cartItem = user.getCart().stream().filter((ci) -> (ci.getId() == cartItemId)).findFirst()
 					.orElse(null);
-			
+
 			log.debug("cartItem: " + cartItem);
 			// The CartItem passed in isn't null and the quantity is greater than zero
 			if (cartItem != null) {
 				int quantity = cartItem.getQuantity();
 				int itemId = cartItem.getItem().getId();
 				user.getCart().remove(cartItem);
+
+				// Loop through and make sure each id gets changed correctly
+				for (int i = cartItemId; i < user.getCart().size(); i++) {
+					user.getCart().get(i).setId(i);
+				}
 				itemDAO.addAmountToInventory(itemId, quantity);
 				ud.writeToFile();
 				log.trace("App has returned to removeFromCart");
@@ -328,6 +341,18 @@ public class UserService {
 		if (order != null && status != null) {
 			order.setStatus(status); // Changes the status
 			log.debug("order status is now " + order.getStatus());
+			// If the order is being cancelled (wasn't shipped yet), the items will go back
+			// to inventory.
+			if (status.equals(OrderStatus.CANCELLED)) {
+				order.getItemsOrdered().stream().forEach((orderItem) -> {
+					itemDAO.addAmountToInventory(orderItem.getItem().getId(), orderItem.getQuantity());
+					log.trace("App has returned to changeOrderStatus.");
+
+				});
+				itemDAO.writeToFile();
+				log.trace("App has returned to changeOrderStatus.");
+
+			}
 			ud.writeToFile();
 			log.trace("App has returned to changeOrderStatus.");
 		}
@@ -353,6 +378,46 @@ public class UserService {
 
 		}
 		log.trace("App is exiting changeCartItemPrice.");
+	}
+	
+	/**
+	 * Changes the user email
+	 * @param user The user that is changing their email
+	 * @param newEmail The new email of the user
+	 */
+	public void updateEmail(User user, String newEmail) {
+		log.trace("App has entered updateEmail");
+		log.debug("updateEmail parameters: user" + user + ", newEmail: " + newEmail);
+		
+		//If the email is not null and not blank
+		if (newEmail != null && !newEmail.isBlank()) {
+			user.setEmail(newEmail);
+			log.debug("user email set to " + user.getEmail());
+			ud.writeToFile();
+			log.trace("App has returned to updateEmail");
+		}
+		log.trace("App is exiting updateEmail");
+
+	}
+	
+	/**
+	 * Changes the user password
+	 * @param user The user that is changing their password
+	 * @param newPassword The new password of the user
+	 */
+	public void updatePassword(User user, String newPassword) {
+		log.trace("App has entered updatePassword");
+		log.debug("updatePassword parameters: user" + user + ", newPassword: " + newPassword);
+		
+		//If the password is not null and not blank
+		if (newPassword != null && !newPassword.isBlank()) {
+			user.setPassword(newPassword);
+			log.debug("user password set to " + user.getPassword());
+			ud.writeToFile();
+			log.trace("App has returned to updatePassword");
+		}
+		log.trace("App is exiting updatePassword");
+
 	}
 
 }
