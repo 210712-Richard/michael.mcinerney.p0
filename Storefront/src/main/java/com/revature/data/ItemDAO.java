@@ -122,6 +122,47 @@ public class ItemDAO {
 		return item;
 
 	}
+	
+	/**
+	 * Returns items back to the inventory
+	 * @param itemId The ID of the item
+	 * @param quantity The quantity being put back
+	 */
+	public void addAmountToInventory(int itemId, int quantity) {
+		log.trace("User has entered addAmountoInventory");
+		log.debug("addAmountToInventory parameters: itemId: " + itemId + ", quantity: " + quantity);
+		Item item = getItem(itemId); //Get the item using the itemId
+		
+		//If the item is not null and the quantity is a non-negative number
+		if (item != null && quantity >= 0) {
+			//Adds the quantity to the current amount in inventory
+			item.setAmountInInventory(item.getAmountInInventory() + quantity);
+		}
+		writeToFile();
+		log.trace("User is exiting addAmountToInventory.");
+	}
+	
+	/**
+	 * Removes a specified amount from an item's inventory
+	 * @param itemId The ID of the item
+	 * @param quantity The quantity being taken out
+	 */
+	public void removeAmountFromInventory(int itemId, int quantity) {
+		log.trace("User has entered removeAmountFromInventory");
+		log.debug("removeAmountFromInventory parameters: itemId: " + itemId + ", quantity: " + quantity);
+		Item item = getItem(itemId); //Get the actual item with the itemId
+		
+		//If the item is no not null, and the quantity is greater than zero but less than the current inventory
+		if (item != null && quantity > 0 && quantity <= item.getAmountInInventory()) {
+			
+			//Subtract the quantity from the amount in inventory already
+			item.setAmountInInventory(item.getAmountInInventory() - quantity);
+			log.debug("item quantity was set to " + item.getAmountInInventory());
+		}
+		writeToFile();
+		log.trace("App has returned to removeAmountFromInventory.");
+		log.trace("App is exiting removeAmountFromInventory.");
+	}
 
 	/**
 	 * Save to the inventory file.

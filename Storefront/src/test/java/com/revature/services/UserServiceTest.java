@@ -15,6 +15,8 @@ import org.mockito.Mockito;
 
 import com.revature.beans.AccountType;
 import com.revature.beans.CartItem;
+import com.revature.beans.Item;
+import com.revature.beans.ItemCategory;
 import com.revature.beans.Order;
 import com.revature.beans.OrderStatus;
 import com.revature.beans.User;
@@ -290,8 +292,9 @@ public class UserServiceTest {
 		int itemId = 0;
 		double price = 20.0;
 		int quantity = 5;
-		CartItem cartItem = new CartItem(itemId, quantity, price);
-		service.addToCart(user, itemId, quantity, price);
+		Item item = new Item(0, "name", 20, 20, ItemCategory.COMPUTER_ACCESSORY,"desc");
+		CartItem cartItem = new CartItem(0, item, quantity, price);
+		service.addToCart(user, item, quantity, price);
 
 		assertTrue(user.getCart().contains(cartItem), "Assert that the Item and it's properties are in the cart.");
 		// Use Mockito to make sure writeToFile is called
@@ -302,19 +305,19 @@ public class UserServiceTest {
 		int add = 10;
 		cartItem.setQuantity(cartItem.getQuantity() + add);
 		int size = user.getCart().size();
-		service.addToCart(user, itemId, add, price);
+		service.addToCart(user, item, add, price);
 		assertTrue(user.getCart().contains(cartItem), "Assert that the changes to the item were made and in the cart.");
 		assertEquals(user.getCart().size(), size,
 				"Assert that the size of the cart did not change when the same item was passed in.");
 
 		// Make sure 0.0 price and 0 quantity don't add the item to cart
-		CartItem zeroPrice = new CartItem(itemId, quantity, 0.0);
-		service.addToCart(user, itemId, quantity, 0.0);
+		CartItem zeroPrice = new CartItem(0, item, quantity, 0.0);
+		service.addToCart(user, item, quantity, 0.0);
 		assertFalse(user.getCart().contains(zeroPrice),
 				"Assert that a negative or zero price does not add the item to the cart.");
 
-		CartItem zeroQuantity = new CartItem(itemId, 0, price);
-		service.addToCart(user, itemId, 0, price);
+		CartItem zeroQuantity = new CartItem(0, item, 0, price);
+		service.addToCart(user, item, 0, price);
 		assertFalse(user.getCart().contains(zeroQuantity),
 				"Assert that a negative or quantity price does not add the item to the cart.");
 	}
@@ -324,7 +327,8 @@ public class UserServiceTest {
 		dao = mockHelper.setPrivateMock(service, "ud");
 
 		// Make sure the user passed in creates the order
-		user.addToCart(0, 10, 20.0); // Makes sure the cart isn't empty
+		Item item = new Item(0, "name", 20, 20, ItemCategory.COMPUTER_ACCESSORY,"desc");
+		user.getCart().add(new CartItem(0, item, 20, 20));
 		service.createOrder(user);
 		assertFalse(user.getPastOrders().isEmpty(), "Assert that the cart was added to the orders.");
 
@@ -350,7 +354,8 @@ public class UserServiceTest {
 		Mockito.verify(dao).writeToFile();
 
 		// If user is being deactivated and has a cart, cart should be emptied
-		user.addToCart(0, 10, 20.0); // Makes sure the cart isn't empty
+		Item item = new Item(0, "name", 20, 20, ItemCategory.COMPUTER_ACCESSORY,"desc");
+		user.getCart().add(new CartItem(0, item, 20, 20));
 		service.changeActiveStatus(user, status);
 		assertTrue(user.getCart().isEmpty(), "Assert that the cart was empty before User was deactivated.");
 
@@ -364,17 +369,18 @@ public class UserServiceTest {
 		int newQuantity = 20;
 		int itemId = 0;
 		double price = 10.0;
-
-		user.addToCart(itemId, oldQuantity, price);
-		CartItem item = user.getCart().get(0);
-		service.changeQuantityInCart(item, newQuantity);
-		assertEquals(item.getQuantity(), newQuantity, "Assert that the quantity changed to the new quantity.");
+		Item item = new Item(itemId, "name", 20, 20, ItemCategory.COMPUTER_ACCESSORY,"desc");
+		user.getCart().add(new CartItem(0, item, oldQuantity, price));
+		
+		CartItem cartItem = user.getCart().get(0);
+		service.changeQuantityInCart(cartItem, newQuantity);
+		assertEquals(cartItem.getQuantity(), newQuantity, "Assert that the quantity changed to the new quantity.");
 		// Mockito verification for writeToFile
 		Mockito.verify(dao).writeToFile();
 
 		// Zero or negative quantity doesn't do anything
-		service.changeQuantityInCart(item, 0);
-		assertEquals(item.getQuantity(), newQuantity, "Assert that the quantity didn't change to the new quantity.");
+		service.changeQuantityInCart(cartItem, 0);
+		assertEquals(cartItem.getQuantity(), newQuantity, "Assert that the quantity didn't change to the new quantity.");
 
 	}
 
@@ -387,7 +393,9 @@ public class UserServiceTest {
 		int itemId = 0;
 		double price = 10.0;
 
-		user.addToCart(itemId, quantity, price);
+		Item item = new Item(itemId, "name", 20, 20, ItemCategory.COMPUTER_ACCESSORY,"desc");
+
+		user.getCart().add(new CartItem(0, item, quantity, price));
 		user.createOrder();
 
 		Order order = user.getPastOrders().get(0);
@@ -412,17 +420,17 @@ public class UserServiceTest {
 		double newPrice = 30.0;
 		int itemId = 0;
 		int quantity = 1;
-
-		user.addToCart(itemId, quantity, oldPrice);
-		CartItem item = user.getCart().get(0);
-		service.changeCartItemPrice(item, newPrice);
-		assertEquals(item.getPrice(), newPrice, "Assert that the price changed to the new price.");
+		Item item = new Item(itemId, "name", 20, 20, ItemCategory.COMPUTER_ACCESSORY,"desc");
+		user.getCart().add(new CartItem(0, item, quantity, oldPrice));
+		CartItem cartItem = user.getCart().get(0);
+		service.changeCartItemPrice(cartItem, newPrice);
+		assertEquals(cartItem.getPrice(), newPrice, "Assert that the price changed to the new price.");
 		// Mockito verification for writeToFile
 		Mockito.verify(dao).writeToFile();
 
 		// Zero or negative price doesn't do anything
-		service.changeCartItemPrice(item, 0.0);
-		assertEquals(item.getPrice(), newPrice, "Assert that the price didn't change to the new price.");
+		service.changeCartItemPrice(cartItem, 0.0);
+		assertEquals(cartItem.getPrice(), newPrice, "Assert that the price didn't change to the new price.");
 
 	}
 

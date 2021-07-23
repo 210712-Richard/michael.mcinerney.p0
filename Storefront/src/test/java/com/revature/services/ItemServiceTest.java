@@ -18,6 +18,7 @@ import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
 import com.revature.beans.Sale;
 import com.revature.data.ItemDAO;
+import com.revature.data.UserDAO;
 import com.revature.util.MockitoHelper;
 
 public class ItemServiceTest {
@@ -26,6 +27,8 @@ public class ItemServiceTest {
 
 	private static MockitoHelper<ItemDAO> mock; // Used to create the mock used for the ItemDAO.
 	private ItemDAO dao; // Used to verify ItemDAO methods are called.
+	private UserDAO userDAO;
+
 
 	@BeforeAll
 	public static void beforeStart() {
@@ -233,25 +236,42 @@ public class ItemServiceTest {
 	@Test
 	public void testEndSale() {
 		dao = mock.setPrivateMock(service, "iDAO");
+		userDAO = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "userDAO");
 		item.setSale(new Sale());
 		service.endSale(item);
 		
+		ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
+		ArgumentCaptor<Sale> saleCaptor = ArgumentCaptor.forClass(Sale.class);
 		Mockito.verify(dao).writeToFile();
+		Mockito.verify(userDAO).setSaleInCarts(idCaptor.capture(), saleCaptor.capture());
 		
 		assertNull("Assert that the Sale was set to null", item.getSale());
+		assertNull("Assert that the Sale passed to UserDAO was null", saleCaptor.getValue());
+		assertEquals(idCaptor.getValue(), item.getId(), "Assert that the id passed into UserDAO was the item's id.");
+
 	}
 	
 	@Test
 	public void testSetSale() {
 		dao = mock.setPrivateMock(service, "iDAO");
+		userDAO = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "userDAO");
+
 		double price = 20.00;
 		LocalDate endDate = LocalDate.now();
 		service.setSale(item, endDate, price);
 		
+		ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
+		ArgumentCaptor<Sale> saleCaptor = ArgumentCaptor.forClass(Sale.class);
 		Mockito.verify(dao).writeToFile();
+		Mockito.verify(userDAO).setSaleInCarts(idCaptor.capture(), saleCaptor.capture());
+
 		
 		assertEquals(price, item.getSale().getSalePrice(), "Assert that the sale price set is the same as the one entered.");
 		assertEquals(endDate, item.getSale().getEndDate(), "Assert that the end date set is the same as the one entered");
+		
+		//Make sure values passed in are correct
+		assertEquals(idCaptor.getValue(), item.getId(), "Assert that the id passed into UserDAO was the item's id.");
+		assertEquals(saleCaptor.getValue(), item.getSale(), "Assert that the id passed into UserDAO was the item's id.");
 		
 		item.setSale(null);
 		service.setSale(item, null, price);

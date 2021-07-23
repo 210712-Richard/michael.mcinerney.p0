@@ -43,6 +43,20 @@ public class UserController {
 		ctx.status(401);
 		log.trace("App is leaving login");
 	}
+	
+	/**
+	 * Logs the user out
+	 * @param ctx The context
+	 */
+	public void logout(Context ctx) {
+		log.trace("App has entered logout.");
+		log.debug("Request body: " + ctx.body());
+		
+		//This gets rid of the session
+		ctx.req.getSession().invalidate();
+		ctx.status(204);
+		log.trace("App is exiting logout.");
+	}
 
 	/**
 	 * Register a new user

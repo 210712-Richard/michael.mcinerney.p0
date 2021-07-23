@@ -157,7 +157,7 @@ public class Menu {
 									: item.getPrice());
 							log.debug("price set to " + price);
 
-							us.addToCart(activeUser, item.getId(), quantity, price);
+							us.addToCart(activeUser, item, quantity, price);
 							continue customerLoop;
 						}
 						// If the quantity is zero, it will go back to the menu
@@ -241,7 +241,7 @@ public class Menu {
 			log.debug("cartSize is " + cartSize);
 
 			if (selection >= 0 && selection < cartSize) { // If the selection is in the index range of the cart.
-				Item i = is.getItem(activeUser.getCart().get(selection).getItemId());
+				Item i = activeUser.getCart().get(selection).getItem();
 				log.debug("Item selected is " + i);
 				int maxQuantity = activeUser.getCart().get(selection).getQuantity() + i.getAmountInInventory();
 
@@ -256,8 +256,8 @@ public class Menu {
 				int quantity = getUserInput();
 				if (quantity == 0) { // If quantity is zero
 					log.info(activeUser.getUsername() + " is removing " + i.getName());
-					CartItem cartItem = activeUser.getCart().remove(selection); // Remove the item from the cart.
-					is.addAmountToInventory(cartItem.getItemId(), cartItem.getQuantity());
+					// Remove the item from the cart.
+					us.removeFromCart(activeUser, selection);
 					
 					log.trace(activeUser.getUsername() + " is back in customerCartMenu");
 					log.debug("items new amount is now " + i.getAmountInInventory());
@@ -890,7 +890,7 @@ public class Menu {
 				activeUser.getCart().stream()
 				// Loop through and increase each item inventory to
 				.forEach((cartItem) -> {
-					is.addAmountToInventory(cartItem.getItemId(), cartItem.getQuantity());
+					is.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
 				});
 				us.changeActiveStatus(activeUser, status);
 				
@@ -933,7 +933,7 @@ public class Menu {
 							selectedUser.getCart().stream()
 							// Loop through and increase each item inventory
 							.forEach((cartItem) -> {
-								is.addAmountToInventory(cartItem.getItemId(), cartItem.getQuantity());
+								is.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
 							});
 						}
 						us.changeActiveStatus(selectedUser, status);
@@ -972,18 +972,10 @@ public class Menu {
 			// Print out the details of the item
 			
 			//Get the price that should be displayed:
-			double price = 0.0;
-			if (isOrderList) {
-				price = cartItem.getPrice();
-			}
-			else { //Display the item price and update the cart item with the price
-				Item item = is.getItem(cartItem.getItemId());
-				price = ((item.getSale() == null) ? item.getPrice() : item.getSale().getSalePrice());
-				us.changeCartItemPrice(cartItem, price);
-			}
+			double price = cartItem.getPrice();
 			// Add an extra tab for formatting or the number if it is a cart we're seeing.
 			String print = isOrderList ? "\t" : Integer.toString(i + 1) + ". ";
-			System.out.println("\t" + print + is.getItem(cartItem.getItemId()).getName());
+			System.out.println("\t" + print + cartItem.getItem().getName());
 			System.out.println(extraTab + "\tUnit Price: $" + priceFormat.format(price));
 			System.out.println(extraTab + "\tQuantity In Cart: " + cartItem.getQuantity() + "\n");
 
@@ -1176,7 +1168,7 @@ public class Menu {
 						if (status.equals(OrderStatus.CANCELLED)) {
 							orders.get(selection).getItemsOrdered().stream()
 							.forEach((orderItem)->{
-								is.addAmountToInventory(orderItem.getItemId(), orderItem.getQuantity());
+								is.addAmountToInventory(orderItem.getItem().getId(), orderItem.getQuantity());
 							});
 						}
 						log.debug("order status has been set to " + orders.get(selection).getStatus());

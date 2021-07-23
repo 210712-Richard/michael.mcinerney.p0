@@ -89,20 +89,12 @@ public class User implements Serializable{
 		this.isActive = isActive;
 	}
 	
-	public void addToCart(int itemId, int quantity, double price) {
-		//item can't be null, and neither quantity nor price can be negative or zero
-		if (itemId < 0 || quantity <= 0 || price <= 0.0) {
-			return;
-		}
-		cart.add(new CartItem(itemId, quantity, price));
-	}
-	
 	public void createOrder() {
 		double total = 0.0;
 		for(CartItem cartItem : cart) {
 			total += cartItem.getPrice() * cartItem.getQuantity();
 		}
-		pastOrders.add(new Order(cart, LocalDate.now(), LocalDate.now().plus(Period.of(0, 0, cart.size())), total));
+		pastOrders.add(new Order(pastOrders.size(), cart, LocalDate.now(), LocalDate.now().plus(Period.of(0, 0, cart.size())), total));
 		cart = new ArrayList<CartItem>(); //Get rid of the items in the cart since it has been ordered.
 	}
 	@Override
