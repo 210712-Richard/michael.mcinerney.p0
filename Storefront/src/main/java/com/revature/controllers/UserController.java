@@ -354,6 +354,53 @@ public class UserController {
 	
 	public void changeQuantityOfCartItem(Context ctx) {
 		
+		log.trace("App has entered changeQuantityOfCartItem.");
+		log.debug("Request body: " + ctx.body());
+
+		// Get the logged in user
+		User loggedUser = ctx.sessionAttribute("loggedUser");
+		log.debug("loggedUser: " + loggedUser);
+
+		// Get the username and cartItemId from the path
+		String username = ctx.pathParam("username");
+		int cartItemId = Integer.parseInt(ctx.pathParam("cartItemId"));
+		log.debug("Username from path: " + username);
+		log.debug("cartItemId from path: " + cartItemId);
+		
+		// If the user is not logged in, is trying to access another user's cart, or is
+		// not a customer
+		if (loggedUser == null || !loggedUser.getUsername().equals(username)
+				|| !loggedUser.getAccountType().equals(AccountType.CUSTOMER)) {
+			ctx.status(403);
+			log.trace("App is leaving changeQuantityOfCartItem.");
+			return;
+		}
+		
+		//Get the CartItem from the users cart using cartItemId
+		CartItem cartItem = loggedUser.getCart().stream()
+				.filter((cI)->cI.getId() == cartItemId)
+				.findFirst()
+				.orElse(null);
+		log.debug("CartItem from cart: " + cartItem);
+		
+		// Get the quantity from the body.
+		CartItem cartItemQuantity = ctx.bodyAsClass(CartItem.class);
+		log.debug("CartItem from ctx.body(): " + cartItemQuantity);
+		
+		// If the object in body is null
+		if (cartItemQuantity == null || cartItem == null) {
+			ctx.status(404);
+			ctx.html("No item was found.");
+			log.trace("App is leaving changeQuantityOfCartItem.");
+			return;
+		}
+
+		// Change the quantity in the cart.
+		userService.changeQuantityInCart(cartItem, cartItemQuantity.getQuantity());
+		log.trace("App has returned to changeQuantityOfCartItem.");
+
+		ctx.json(loggedUser.getCart());
+		log.trace("App is leaving changeQuantityOfCartItem.");
 	}
 	
 	public void createOrder(Context ctx) {

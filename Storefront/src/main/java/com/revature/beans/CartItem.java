@@ -57,9 +57,6 @@ public class CartItem implements Serializable{
 	}
 
 	public void setQuantity(int quantity) {
-		if (quantity <= 0) {
-			return;
-		}
 		this.quantity = quantity;
 	}
 
