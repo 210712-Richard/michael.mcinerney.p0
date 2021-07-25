@@ -348,10 +348,45 @@ public class UserController {
 		log.trace("App is leaving addToCart.");
 	}
 	
+	/**
+	 * Remove an item from the cart
+	 * @param ctx
+	 */
 	public void removeFromCart(Context ctx) {
-		
+		log.trace("App has entered removeFromCart.");
+		log.debug("Request body: " + ctx.body());
+
+		// Get the logged in user
+		User loggedUser = ctx.sessionAttribute("loggedUser");
+		log.debug("loggedUser: " + loggedUser);
+
+		// Get the username and cartItemId from the path
+		String username = ctx.pathParam("username");
+		log.debug("Username from path: " + username);
+		int cartItemId = Integer.parseInt(ctx.pathParam("cartItemId"));
+		log.debug("cartItemId from path: " + cartItemId);
+
+		// If the user is not logged in, is trying to access another user's cart, or is
+		// not a customer
+		if (loggedUser == null || !loggedUser.getUsername().equals(username)
+				|| !loggedUser.getAccountType().equals(AccountType.CUSTOMER)) {
+			ctx.status(403);
+			log.trace("App is leaving removeFromCart.");
+			return;
+		}
+
+		// Add the item to the cart.
+		userService.removeFromCart(loggedUser, cartItemId);
+		log.trace("App has returned to removeFromCart.");
+
+		ctx.json(loggedUser.getCart());
+		log.trace("App is leaving removeFromCart.");
 	}
 	
+	/**
+	 * Change the quantity of an item in the cart
+	 * @param ctx The context
+	 */
 	public void changeQuantityOfCartItem(Context ctx) {
 		
 		log.trace("App has entered changeQuantityOfCartItem.");
@@ -363,8 +398,8 @@ public class UserController {
 
 		// Get the username and cartItemId from the path
 		String username = ctx.pathParam("username");
-		int cartItemId = Integer.parseInt(ctx.pathParam("cartItemId"));
 		log.debug("Username from path: " + username);
+		int cartItemId = Integer.parseInt(ctx.pathParam("cartItemId"));
 		log.debug("cartItemId from path: " + cartItemId);
 		
 		// If the user is not logged in, is trying to access another user's cart, or is
