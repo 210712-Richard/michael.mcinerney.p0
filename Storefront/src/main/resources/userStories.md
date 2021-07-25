@@ -1,6 +1,6 @@
 # User Stories
 
-##User Types
+## User Types
 * Customer
 * Manager
 * Administrator
@@ -20,8 +20,9 @@
 * As a customer, I can create an order for the items in my cart.
 
 ### Manager Stories
+* As a manager, I can add items to the inventory.
 * As a manager, I can modify the price of items.
-* As a manager, I can edit inventory of items.
+* As a manager, I can edit amount in inventory of items.
 * As a manager, I can add limited time deals for items.
 * As a manager, I can refund a customer's order.
 * As a manager, I can deactivate customer accounts.

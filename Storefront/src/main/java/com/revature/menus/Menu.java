@@ -801,7 +801,11 @@ public class Menu {
 				"Your current email address is " + activeUser.getEmail() + ". Please enter a new email address: ");
 		String newEmail = scanner.nextLine(); // User enters new email
 		log.debug(activeUser.getUsername() + " entered newEmail: " + newEmail);
-
+		if (newEmail.isBlank()) {
+			System.out.println("The email you entered was blank. Please try again.");
+			log.trace(activeUser.getUsername() + " is now leaving changeEmail.");
+			return;
+		}
 		System.out.println("Saving email address...");
 		us.updateEmail(activeUser, newEmail); // Save the data to the file
 		System.out.println("Email address saved.");

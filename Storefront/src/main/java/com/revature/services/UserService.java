@@ -71,7 +71,7 @@ public class UserService {
 		log.trace("App is now in getUser.");
 		log.debug("getUser parameters: username: " + username);
 
-		User retUser = ud.getUser(username, username);
+		User retUser = ud.getUser(username);
 		log.trace("App is exiting getUser");
 		log.debug("getUser returning User: " + retUser);
 		return retUser;
@@ -170,8 +170,7 @@ public class UserService {
 		log.trace("App has entered addToCart.");
 		log.debug("addToCart Parameters: activeUser: " + activeUser + ", item: " + item + ", quantity: " + quantity);
 		if (item != null && quantity > 0 && activeUser != null) {
-			final double price = ((item.getSale() != null) ? item.getSale().getSalePrice()
-					: item.getPrice());
+			final double price = ((item.getSale() != null) ? item.getSale().getSalePrice() : item.getPrice());
 			log.debug("price set to " + price);
 			// Use a stream to see if the item is already in the cart. Null otherwise.
 			CartItem inCart = activeUser.getCart().stream().filter(c -> c.getItem().getId() == item.getId()).findFirst()
@@ -235,10 +234,10 @@ public class UserService {
 			// If the user has stuff in their cart, this will empty their cart
 			if (!activeUser.getCart().isEmpty()) {
 				activeUser.getCart().stream()
-				// Loop through and increase each item inventory to
-				.forEach((cartItem) -> {
-					itemDAO.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
-				});
+						// Loop through and increase each item inventory to
+						.forEach((cartItem) -> {
+							itemDAO.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
+						});
 				activeUser.setCart(new ArrayList<CartItem>()); // Empty the cart.
 				log.debug("User status has changed to " + activeUser.getCart());
 			}
@@ -379,43 +378,40 @@ public class UserService {
 		}
 		log.trace("App is exiting changeCartItemPrice.");
 	}
-	
+
 	/**
 	 * Changes the user email
-	 * @param user The user that is changing their email
+	 * 
+	 * @param user     The user that is changing their email
 	 * @param newEmail The new email of the user
 	 */
 	public void updateEmail(User user, String newEmail) {
 		log.trace("App has entered updateEmail");
 		log.debug("updateEmail parameters: user" + user + ", newEmail: " + newEmail);
-		
-		//If the email is not null and not blank
-		if (newEmail != null && !newEmail.isBlank()) {
-			user.setEmail(newEmail);
-			log.debug("user email set to " + user.getEmail());
-			ud.writeToFile();
-			log.trace("App has returned to updateEmail");
-		}
+
+		user.setEmail(newEmail);
+		log.debug("user email set to " + user.getEmail());
+		ud.writeToFile();
+		log.trace("App has returned to updateEmail");
 		log.trace("App is exiting updateEmail");
 
 	}
-	
+
 	/**
 	 * Changes the user password
-	 * @param user The user that is changing their password
+	 * 
+	 * @param user        The user that is changing their password
 	 * @param newPassword The new password of the user
 	 */
 	public void updatePassword(User user, String newPassword) {
 		log.trace("App has entered updatePassword");
 		log.debug("updatePassword parameters: user" + user + ", newPassword: " + newPassword);
-		
-		//If the password is not null and not blank
-		if (newPassword != null && !newPassword.isBlank()) {
-			user.setPassword(newPassword);
-			log.debug("user password set to " + user.getPassword());
-			ud.writeToFile();
-			log.trace("App has returned to updatePassword");
-		}
+
+		user.setPassword(newPassword);
+		log.debug("user password set to " + user.getPassword());
+		ud.writeToFile();
+		log.trace("App has returned to updatePassword");
+
 		log.trace("App is exiting updatePassword");
 
 	}
