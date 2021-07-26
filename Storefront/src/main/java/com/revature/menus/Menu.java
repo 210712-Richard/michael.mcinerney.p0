@@ -146,18 +146,12 @@ public class Menu {
 						final int quantity = getUserInput();
 						// If the quantity is greater than zero and under or equal to the amount in
 						// inventory
-						if (quantity > 0 && quantity <= item.getAmountInInventory()) {
+						if (quantity > 0 && quantity <= item.getAmount()) {
 							// Reduce the inventory amount by the quantity.
-							is.removeAmountFromInventory(item.getId(), quantity);
-							log.trace(activeUser.getUsername() + " is back in openCustomerMenu");
-							log.debug("item quantity set to " + item.getAmountInInventory());
-
 							// If the item is on sale, get the sale price, otherwise, get the item price
-							final double price = ((item.getSale() != null) ? item.getSale().getSalePrice()
-									: item.getPrice());
-							log.debug("price set to " + price);
+							
 
-							us.addToCart(activeUser, item.getId(), quantity, price);
+							us.addToCart(activeUser, item, quantity);
 							continue customerLoop;
 						}
 						// If the quantity is zero, it will go back to the menu
@@ -184,7 +178,7 @@ public class Menu {
 			case 3:
 				// View and edit orders
 				System.out.println("Here are you orders: ");
-				orderEditMenu(activeUser.getPastOrders(), true);
+				orderEditMenu(activeUser.getOrders(), true);
 				log.trace(activeUser.getUsername() + " has returned to openCustomerMenu");
 				break;
 			case 4:
@@ -241,9 +235,9 @@ public class Menu {
 			log.debug("cartSize is " + cartSize);
 
 			if (selection >= 0 && selection < cartSize) { // If the selection is in the index range of the cart.
-				Item i = is.getItem(activeUser.getCart().get(selection).getItemId());
+				Item i = activeUser.getCart().get(selection).getItem();
 				log.debug("Item selected is " + i);
-				int maxQuantity = activeUser.getCart().get(selection).getQuantity() + i.getAmountInInventory();
+				int maxQuantity = activeUser.getCart().get(selection).getQuantity() + i.getAmount();
 
 				log.debug("maxQuantity is set to: " + maxQuantity);
 
@@ -256,11 +250,11 @@ public class Menu {
 				int quantity = getUserInput();
 				if (quantity == 0) { // If quantity is zero
 					log.info(activeUser.getUsername() + " is removing " + i.getName());
-					CartItem cartItem = activeUser.getCart().remove(selection); // Remove the item from the cart.
-					is.addAmountToInventory(cartItem.getItemId(), cartItem.getQuantity());
+					// Remove the item from the cart.
+					us.removeFromCart(activeUser, selection);
 					
 					log.trace(activeUser.getUsername() + " is back in customerCartMenu");
-					log.debug("items new amount is now " + i.getAmountInInventory());
+					log.debug("items new amount is now " + i.getAmount());
 					System.out.println(i.getName() + " removed.");
 					
 				//Changes the quantity of one of the items in the cart
@@ -371,7 +365,7 @@ public class Menu {
 				User user = searchUsernameMenu(AccountType.CUSTOMER, false); // Search for the user
 				log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
 				if (user != null) { // The user selected a valid User
-					orderEditMenu(user.getPastOrders(), false); // Find the order to refund
+					orderEditMenu(user.getOrders(), false); // Find the order to refund
 					log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
 				}
 
@@ -411,8 +405,9 @@ public class Menu {
 			System.out.println("Please select if you want to add a new item or edit an existing item's quantity: ");
 			System.out.println("\t1. Add Item");
 			System.out.println("\t2. Add or Remove Sale");
-			System.out.println("\t3. Edit Exisiting Item Quantity");
-			System.out.println("\t4. Back");
+			System.out.println("\t3. Edit Exisiting Item Amount");
+			System.out.println("\t4. Edit Price of an Item");
+			System.out.println("\t5. Back");
 			int selection = getUserInput();
 			log.trace(activeUser.getUsername() + " has returned to editInventoryMenu");
 			switch (selection) {
@@ -549,12 +544,12 @@ public class Menu {
 				}
 				System.out.println("Please enter the new quantity of " + item.getName() + " in inventory: ");
 				int newQuantity = getUserInput();
-				if (newQuantity > 0) { // The user entered a positive or 0 quantity
+				if (newQuantity >= 0) { // The user entered a positive or 0 quantity
 					log.info("Item quantity is being changed.");
 					is.changeAmount(item, newQuantity);
 					log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
 					log.debug("item has been set to " + item);
-					System.out.println(item.getName() + " amount is now " + item.getAmountInInventory());
+					System.out.println(item.getName() + " amount is now " + item.getAmount());
 					break editLoop;
 				} else {
 					log.info(activeUser.getUsername() + " entered an invalid quantity.");
@@ -562,6 +557,29 @@ public class Menu {
 					break;
 				}
 			case 4:
+				// Edit Existing Item Amount
+				System.out.println("Edit Inventory Amount");
+				Item getItem = searchItemMenu(false);
+				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+				if (getItem == null) { // User wanted to go back
+					log.info(activeUser.getUsername() + " is going back.");
+					break;
+				}
+				System.out.println("Please enter the new price of " + getItem.getName() + " in inventory: ");
+				double editPrice = getUserDouble();
+				if (editPrice > 0.0) { // The user entered a positive or 0 quantity
+					log.info("Item quantity is being changed.");
+					is.changePrice(getItem, editPrice);
+					log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+					log.debug("item has been set to " + getItem);
+					System.out.println(getItem.getName() + " amount is now " + getItem.getPrice());
+					break editLoop;
+				} else {
+					log.info(activeUser.getUsername() + " entered an invalid quantity.");
+					System.out.println("Invalid input. Please try again.");
+					break;
+				}
+			case 5:
 				// Go back
 				break editLoop;
 			default:
@@ -807,10 +825,13 @@ public class Menu {
 				"Your current email address is " + activeUser.getEmail() + ". Please enter a new email address: ");
 		String newEmail = scanner.nextLine(); // User enters new email
 		log.debug(activeUser.getUsername() + " entered newEmail: " + newEmail);
-
+		if (newEmail.isBlank()) {
+			System.out.println("The email you entered was blank. Please try again.");
+			log.trace(activeUser.getUsername() + " is now leaving changeEmail.");
+			return;
+		}
 		System.out.println("Saving email address...");
-		activeUser.setEmail(newEmail); // Set the email
-		activeUser = us.updateUser(activeUser); // Save the data to the file
+		us.updateEmail(activeUser, newEmail); // Save the data to the file
 		System.out.println("Email address saved.");
 		log.debug(activeUser.getUsername() + " has changed their email address to newEmail " + newEmail + ": "
 				+ activeUser.getEmail() == newEmail);
@@ -856,8 +877,7 @@ public class Menu {
 		} while (!newPassword.equals(confirmPassword));
 
 		System.out.println("Saving password...");
-		activeUser.setPassword(newPassword);
-		us.updateUser(activeUser);
+		us.updatePassword(activeUser, newPassword);
 		log.trace(activeUser.getUsername() + " is back in changePassword.");
 		System.out.println("Password Saved.");
 		log.trace(activeUser.getUsername() + " is exiting changePassword.");
@@ -887,11 +907,7 @@ public class Menu {
 			switch (affirm) {
 			case 1: // User has to enter 1
 				System.out.println("Deactivating account...");
-				activeUser.getCart().stream()
-				// Loop through and increase each item inventory to
-				.forEach((cartItem) -> {
-					is.addAmountToInventory(cartItem.getItemId(), cartItem.getQuantity());
-				});
+				
 				us.changeActiveStatus(activeUser, status);
 				
 				log.trace(activeUser.getUsername() + " back in changeActiveStatusMenu.");
@@ -929,13 +945,8 @@ public class Menu {
 					case 1: // User entered 1
 						System.out.println("Trying to " + activateString + " this account...");
 						
-						if (!status && !selectedUser.getCart().isEmpty()) {
-							selectedUser.getCart().stream()
-							// Loop through and increase each item inventory
-							.forEach((cartItem) -> {
-								is.addAmountToInventory(cartItem.getItemId(), cartItem.getQuantity());
-							});
-						}
+					
+							
 						us.changeActiveStatus(selectedUser, status);
 						log.trace(activeUser.getUsername() + " is back in changeActiveStatusMenu.");
 						log.debug("selectedUser now set to new status: " + selectedUser.isActive());
@@ -972,18 +983,10 @@ public class Menu {
 			// Print out the details of the item
 			
 			//Get the price that should be displayed:
-			double price = 0.0;
-			if (isOrderList) {
-				price = cartItem.getPrice();
-			}
-			else { //Display the item price and update the cart item with the price
-				Item item = is.getItem(cartItem.getItemId());
-				price = ((item.getSale() == null) ? item.getPrice() : item.getSale().getSalePrice());
-				us.changeCartItemPrice(cartItem, price);
-			}
+			double price = cartItem.getPrice();
 			// Add an extra tab for formatting or the number if it is a cart we're seeing.
 			String print = isOrderList ? "\t" : Integer.toString(i + 1) + ". ";
-			System.out.println("\t" + print + is.getItem(cartItem.getItemId()).getName());
+			System.out.println("\t" + print + cartItem.getItem().getName());
 			System.out.println(extraTab + "\tUnit Price: $" + priceFormat.format(price));
 			System.out.println(extraTab + "\tQuantity In Cart: " + cartItem.getQuantity() + "\n");
 
@@ -1031,7 +1034,7 @@ public class Menu {
 								+ priceFormat.format(item.getSale().getSalePrice());
 					}
 					// Print the price and amount in stock
-					System.out.println("\t\t" + priceString + " Amount In Stock: " + item.getAmountInInventory());
+					System.out.println("\t\t" + priceString + " Amount In Stock: " + item.getAmount());
 					System.out.println("\t\t" + item.getDescription()); // Print the description
 					System.out.println(""); // New line to seperate items.
 				}
@@ -1171,14 +1174,7 @@ public class Menu {
 					case 1: // Order status will be changed
 						us.changeOrderStatus(orders.get(selection), status);
 
-						// If the order is being cancelled (wasn't shipped yet), the items will go back
-						// to inventory.
-						if (status.equals(OrderStatus.CANCELLED)) {
-							orders.get(selection).getItemsOrdered().stream()
-							.forEach((orderItem)->{
-								is.addAmountToInventory(orderItem.getItemId(), orderItem.getQuantity());
-							});
-						}
+						
 						log.debug("order status has been set to " + orders.get(selection).getStatus());
 						System.out.println("Order status has been changed to " + status);
 						break;

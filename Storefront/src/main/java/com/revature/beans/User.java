@@ -17,14 +17,14 @@ public class User implements Serializable{
 	private String password; //The password used to log in
 	private String email; //The email used to register
 	private List<CartItem> cart; //The items the user currently has in their cart
-	private List<Order> pastOrders; //The orders the user has made in the past
+	private List<Order> orders; //The orders the user has made in the past
 	private AccountType accountType; //What kind of account the user is
 	private boolean isActive; //True if the account is still active. False if it has been deactivated.
 	
 	public User() {
 		super();
 		this.cart = new ArrayList<CartItem>();
-		this.pastOrders = new ArrayList<Order>();
+		this.orders = new ArrayList<Order>();
 	}
 	
 	public User(int id, String username, String password, String email, AccountType accountType, boolean isActive) {
@@ -67,11 +67,11 @@ public class User implements Serializable{
 	public void setCart(List<CartItem> cart) {
 		this.cart = cart;
 	}
-	public List<Order> getPastOrders() {
-		return pastOrders;
+	public List<Order> getOrders() {
+		return orders;
 	}
-	public void setPastOrders(List<Order> pastOrders) {
-		this.pastOrders = pastOrders;
+	public void setOrders(List<Order> pastOrders) {
+		this.orders = pastOrders;
 	}
 	public AccountType getAccountType() {
 		return accountType;
@@ -89,25 +89,17 @@ public class User implements Serializable{
 		this.isActive = isActive;
 	}
 	
-	public void addToCart(int itemId, int quantity, double price) {
-		//item can't be null, and neither quantity nor price can be negative or zero
-		if (itemId < 0 || quantity <= 0 || price <= 0.0) {
-			return;
-		}
-		cart.add(new CartItem(itemId, quantity, price));
-	}
-	
 	public void createOrder() {
 		double total = 0.0;
 		for(CartItem cartItem : cart) {
 			total += cartItem.getPrice() * cartItem.getQuantity();
 		}
-		pastOrders.add(new Order(cart, LocalDate.now(), LocalDate.now().plus(Period.of(0, 0, cart.size())), total));
+		orders.add(new Order(orders.size(), cart, LocalDate.now(), LocalDate.now().plus(Period.of(0, 0, cart.size())), total));
 		cart = new ArrayList<CartItem>(); //Get rid of the items in the cart since it has been ordered.
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(accountType, cart, email, id, isActive, password, pastOrders, username);
+		return Objects.hash(accountType, cart, email, id, isActive, password, orders, username);
 	}
 
 	@Override
@@ -121,14 +113,14 @@ public class User implements Serializable{
 		User other = (User) obj;
 		return accountType == other.accountType && Objects.equals(cart, other.cart)
 				&& Objects.equals(email, other.email) && id == other.id && isActive == other.isActive
-				&& Objects.equals(password, other.password) && Objects.equals(pastOrders, other.pastOrders)
+				&& Objects.equals(password, other.password) && Objects.equals(orders, other.orders)
 				&& Objects.equals(username, other.username);
 	}
 
 	@Override
 	public String toString() {
 		return "User [id=" + id + ", username=" + username + ", email=" + email + ", cart="
-				+ cart + ", pastOrders=" + pastOrders + ", accountType=" + accountType + ", isActive=" + isActive + "]";
+				+ cart + ", pastOrders=" + orders + ", accountType=" + accountType + ", isActive=" + isActive + "]";
 	}
 	
 	

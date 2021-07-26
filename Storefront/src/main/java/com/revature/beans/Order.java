@@ -7,6 +7,7 @@ import java.util.Objects;
 
 public class Order implements Serializable{
 	private static final long serialVersionUID = 1L;
+	private int id;
 	private List<CartItem> itemsOrdered;
 	private LocalDate orderDate;
 	private LocalDate shipDate;
@@ -17,12 +18,19 @@ public class Order implements Serializable{
 		super();
 		status = OrderStatus.ORDERED;
 	}
-	public Order(List<CartItem> itemsOrdered, LocalDate orderDate, LocalDate shipDate, double total) {
+	public Order(int id, List<CartItem> itemsOrdered, LocalDate orderDate, LocalDate shipDate, double total) {
 		this();
+		this.id = id;
 		this.itemsOrdered = itemsOrdered;
 		this.orderDate = orderDate;
 		this.shipDate = shipDate;
 		this.total = total;
+	}
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
 	}
 	public List<CartItem> getItemsOrdered() {
 		return itemsOrdered;
@@ -59,7 +67,7 @@ public class Order implements Serializable{
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(itemsOrdered, orderDate, shipDate, status, total);
+		return Objects.hash(id, itemsOrdered, orderDate, shipDate, status, total);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -70,14 +78,14 @@ public class Order implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		Order other = (Order) obj;
-		return Objects.equals(itemsOrdered, other.itemsOrdered) && Objects.equals(orderDate, other.orderDate)
-				&& Objects.equals(shipDate, other.shipDate) && status == other.status
-				&& Double.doubleToLongBits(total) == Double.doubleToLongBits(other.total);
+		return id == other.id && Objects.equals(itemsOrdered, other.itemsOrdered)
+				&& Objects.equals(orderDate, other.orderDate) && Objects.equals(shipDate, other.shipDate)
+				&& status == other.status && Double.doubleToLongBits(total) == Double.doubleToLongBits(other.total);
 	}
 	@Override
 	public String toString() {
-		return "Order [itemsOrdered=" + itemsOrdered + ", orderDate=" + orderDate + ", shipDate=" + shipDate
-				+ ", status=" + status + ", total=" + total + "]";
+		return "Order [id=" + id + ", itemsOrdered=" + itemsOrdered + ", orderDate=" + orderDate + ", shipDate="
+				+ shipDate + ", status=" + status + ", total=" + total + "]";
 	}
 	
 }

@@ -10,10 +10,12 @@ import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
 import com.revature.beans.Sale;
 import com.revature.data.ItemDAO;
+import com.revature.data.UserDAO;
 
 
 public class ItemService {
 	private ItemDAO iDAO = new ItemDAO(); // Used to get the items and write to file.
+	private UserDAO userDAO = new UserDAO();
 	private static final Logger log = LogManager.getLogger(ItemService.class); // Used to create logs
 	
 	
@@ -111,13 +113,8 @@ public class ItemService {
 	public void addAmountToInventory(int itemId, int quantity) {
 		log.trace("User has entered addAmountoInventory");
 		log.debug("addAmountToInventory parameters: itemId: " + itemId + ", quantity: " + quantity);
-		Item item = iDAO.getItem(itemId); //Get the item using the itemId
-		
-		//If the item is not null and the quantity is a non-negative number
-		if (item != null && quantity >= 0) {
-			//Adds the quantity to the current amount in inventory
-			item.setAmountInInventory(item.getAmountInInventory() + quantity);
-		}
+		iDAO.addAmountToInventory(itemId, quantity);
+		log.trace("App has returned to addAmountFromInventory.");
 		iDAO.writeToFile();
 		log.trace("User is exiting addAmountToInventory.");
 	}
@@ -130,15 +127,8 @@ public class ItemService {
 	public void removeAmountFromInventory(int itemId, int quantity) {
 		log.trace("User has entered removeAmountFromInventory");
 		log.debug("removeAmountFromInventory parameters: itemId: " + itemId + ", quantity: " + quantity);
-		Item item = iDAO.getItem(itemId); //Get the actual item with the itemId
-		
-		//If the item is no not null, and the quantity is greater than zero but less than the current inventory
-		if (item != null && quantity > 0 && quantity <= item.getAmountInInventory()) {
-			
-			//Subtract the quantity from the amount in inventory already
-			item.setAmountInInventory(item.getAmountInInventory() - quantity);
-			log.debug("item quantity was set to " + item.getAmountInInventory());
-		}
+		iDAO.removeAmountFromInventory(itemId, quantity);
+		log.trace("App has returned to removeAmountFromInventory.");
 		iDAO.writeToFile();
 		log.trace("App has returned to removeAmountFromInventory.");
 		log.trace("App is exiting removeAmountFromInventory.");
@@ -157,8 +147,12 @@ public class ItemService {
 			//Gets rid of the sale
 			item.setSale(null);
 			log.debug("item Sale has been set to " + item.getSale());
+			userDAO.setSaleInCarts(item.getId(), null);
+			log.trace("App has returned to endSale.");
+
 		}
 		iDAO.writeToFile();
+		userDAO.writeToFile();
 		log.trace("App has returned to endSale.");
 		log.trace("App is exiting endSale.");
 	}
@@ -178,6 +172,7 @@ public class ItemService {
 			//Adds the sale
 			item.setSale(new Sale(endDate, price));
 			log.debug("saleItem sale has been set to " + item.getSale());
+			userDAO.setSaleInCarts(item.getId(), item.getSale());
 		}
 		iDAO.writeToFile();
 		log.trace("App has returned to setSale.");
@@ -187,20 +182,47 @@ public class ItemService {
 	/**
 	 * Changes the amount of an Item
 	 * @param item The Item being changed
-	 * @param newQuantity The quantity the Item is being set to
+	 * @param newAmount The quantity the Item is being set to
 	 */
-	public void changeAmount(Item item, int newQuantity) {
+	public void changeAmount(Item item, int newAmount) {
 		log.trace("User has entered changeAmount");
-		log.debug("endSale parameters: item: " + item, ", newQuantity: "+ newQuantity);
+		log.debug("endSale parameters: item: " + item, ", newAmount: "+ newAmount);
 		
 		//If the item is not null and is getting a non-negative quantity
-		if (item != null && newQuantity >= 0) {
+		if (item != null && newAmount >= 0) {
 			//Sets the amount
-			item.setAmountInInventory(newQuantity);
-			log.debug("item amountInInventory changed to " + item.getAmountInInventory());
+			item.setAmount(newAmount);
+			log.debug("item amount changed to " + item.getAmount());
 		}
 		iDAO.writeToFile();
 		log.trace("App has returned to changeAmount.");
 		log.trace("App is exiting changeAmount.");
+	}
+	
+	/**
+	 * Changes the price of an Item
+	 * @param item The Item being changed
+	 * @param newPrice The price the Item is being set to
+	 */
+	public void changePrice(Item item, double newPrice) {
+		log.trace("User has entered changePrice");
+		log.debug("endSale parameters: item: " + item, ", newPrice: "+ newPrice);
+		
+		//If the item is not null and is getting a non-negative quantity
+		if (item != null && newPrice > 0.0) {
+			//Sets the amount
+			item.setPrice(newPrice);
+			log.debug("item price changed to " + item.getPrice());
+			
+			//Set the price in the items in the cart
+			userDAO.setPriceInCarts(item.getId(), newPrice);
+			log.trace("App has returned to changePrice.");
+			
+			userDAO.writeToFile();
+			log.trace("App has returned to changePrice.");
+		}
+		iDAO.writeToFile();
+		log.trace("App has returned to changePrice.");
+		log.trace("App is exiting changePrice.");
 	}
 }

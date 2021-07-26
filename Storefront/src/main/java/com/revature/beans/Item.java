@@ -9,7 +9,7 @@ public class Item implements Serializable{
 	private int id; //The ID of the item
 	private String name; //Name of the item
 	private double price; //The price of the item
-	private int amountInInventory; //The amount in the inventory
+	private int amount; //The amount in the inventory
 	private ItemCategory category; //The category of the item
 	private String description; //A description of the item
 	private Sale sale; //A sale for the item. Will be null if no sale
@@ -23,9 +23,9 @@ public class Item implements Serializable{
 		this.id = id;
 		this.name = name;
 		this.price = price;
-		this.amountInInventory = amountInInventory;
+		this.amount = amountInInventory;
 		if (amountInInventory < 0) {
-			this.amountInInventory = 0;
+			this.amount = 0;
 		}
 		this.category = category;
 		this.description = description;
@@ -70,15 +70,15 @@ public class Item implements Serializable{
 		this.sale = new Sale(date, price);
 	}
 
-	public int getAmountInInventory() {
-		return amountInInventory;
+	public int getAmount() {
+		return amount;
 	}
 
-	public void setAmountInInventory(int amountInInventory) {
+	public void setAmount(int amountInInventory) {
 		if(amountInInventory < 0) {
 			return;
 		}
-		this.amountInInventory = amountInInventory;
+		this.amount = amountInInventory;
 	}
 
 	public ItemCategory getCategory() {
@@ -102,7 +102,7 @@ public class Item implements Serializable{
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(amountInInventory, category, description, id, name, price, sale);
+		return Objects.hash(amount, category, description, id, name, price, sale);
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class Item implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		Item other = (Item) obj;
-		return amountInInventory == other.amountInInventory && category == other.category
+		return amount == other.amount && category == other.category
 				&& Objects.equals(description, other.description) && id == other.id && Objects.equals(name, other.name)
 				&& Double.doubleToLongBits(price) == Double.doubleToLongBits(other.price)
 				&& Objects.equals(sale, other.sale);
@@ -122,7 +122,7 @@ public class Item implements Serializable{
 
 	@Override
 	public String toString() {
-		return "Item [id=" + id + ", name=" + name + ", price=" + price + ", amountInInventory=" + amountInInventory
+		return "Item [id=" + id + ", name=" + name + ", price=" + price + ", amount=" + amount
 				+ ", category=" + category + ", description=" + description + ", sale=" + sale + "]";
 	}
 	

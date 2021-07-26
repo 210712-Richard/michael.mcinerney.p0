@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.revature.beans.AccountType;
+import com.revature.beans.Item;
+import com.revature.beans.ItemCategory;
 import com.revature.beans.User;
 
 public class UserDAOTest {
@@ -74,7 +76,7 @@ public class UserDAOTest {
 
 		// The default values are set.
 		assertTrue(newUser.getCart().isEmpty(), "Assert that the new User has an empty cart initialized.");
-		assertTrue(newUser.getPastOrders().isEmpty(), "Assert that the new User has an empty order list initialized.");
+		assertTrue(newUser.getOrders().isEmpty(), "Assert that the new User has an empty order list initialized.");
 		assertTrue(newUser.isActive(), "Assert that the new User is active.");
 	}
 
@@ -135,5 +137,6 @@ public class UserDAOTest {
 		retList = dao.findUsersByName(user.getUsername(), AccountType.MANAGER, false);
 		assertTrue(retList.isEmpty(), "Assert that wrong status returns empty list.");
 	}
+	
 
 }

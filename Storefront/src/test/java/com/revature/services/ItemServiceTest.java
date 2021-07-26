@@ -18,6 +18,7 @@ import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
 import com.revature.beans.Sale;
 import com.revature.data.ItemDAO;
+import com.revature.data.UserDAO;
 import com.revature.util.MockitoHelper;
 
 public class ItemServiceTest {
@@ -26,6 +27,8 @@ public class ItemServiceTest {
 
 	private static MockitoHelper<ItemDAO> mock; // Used to create the mock used for the ItemDAO.
 	private ItemDAO dao; // Used to verify ItemDAO methods are called.
+	private UserDAO userDAO;
+
 
 	@BeforeAll
 	public static void beforeStart() {
@@ -104,7 +107,7 @@ public class ItemServiceTest {
 		// Make sure that the item created has the same fields as the parameters.
 		assertEquals(i.getName(), name, "Assert that name remains the same.");
 		assertEquals(i.getPrice(), price, "Assert that price remains the same.");
-		assertEquals(i.getAmountInInventory(), amount, "Assert that amount remains the same.");
+		assertEquals(i.getAmount(), amount, "Assert that amount remains the same.");
 		assertEquals(i.getCategory(), category, "Assert that the category remains the same.");
 		assertEquals(i.getDescription(), desc, "Assert that the description remains the same.");
 		assertNull("Assert that the sale object is null.", i.getSale());
@@ -163,7 +166,7 @@ public class ItemServiceTest {
 		Item i = captor.getValue();
 		assertEquals(i.getName(), name, "Assert that name remains the same.");
 		assertEquals(i.getPrice(), price, "Assert that price remains the same.");
-		assertEquals(i.getAmountInInventory(), amount, "Assert that amount remains the same.");
+		assertEquals(i.getAmount(), amount, "Assert that amount remains the same.");
 		assertEquals(i.getCategory(), category, "Assert that the category remains the same.");
 		assertEquals(i.getDescription(), desc, "Assert that the description remains the same.");
 
@@ -173,7 +176,7 @@ public class ItemServiceTest {
 	public void testUpdateItem() {
 		// editItem should return Item and should call writeToFile();
 		dao = mock.setPrivateMock(service, "iDAO");
-		item.setAmountInInventory(0);
+		item.setAmount(0);
 		Item retItem = service.updateItem(item);
 
 		// Verify method was called
@@ -233,25 +236,42 @@ public class ItemServiceTest {
 	@Test
 	public void testEndSale() {
 		dao = mock.setPrivateMock(service, "iDAO");
+		userDAO = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "userDAO");
 		item.setSale(new Sale());
 		service.endSale(item);
 		
+		ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
+		ArgumentCaptor<Sale> saleCaptor = ArgumentCaptor.forClass(Sale.class);
 		Mockito.verify(dao).writeToFile();
+		Mockito.verify(userDAO).setSaleInCarts(idCaptor.capture(), saleCaptor.capture());
 		
 		assertNull("Assert that the Sale was set to null", item.getSale());
+		assertNull("Assert that the Sale passed to UserDAO was null", saleCaptor.getValue());
+		assertEquals(idCaptor.getValue(), item.getId(), "Assert that the id passed into UserDAO was the item's id.");
+
 	}
 	
 	@Test
 	public void testSetSale() {
 		dao = mock.setPrivateMock(service, "iDAO");
+		userDAO = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "userDAO");
+
 		double price = 20.00;
 		LocalDate endDate = LocalDate.now();
 		service.setSale(item, endDate, price);
 		
+		ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
+		ArgumentCaptor<Sale> saleCaptor = ArgumentCaptor.forClass(Sale.class);
 		Mockito.verify(dao).writeToFile();
+		Mockito.verify(userDAO).setSaleInCarts(idCaptor.capture(), saleCaptor.capture());
+
 		
 		assertEquals(price, item.getSale().getSalePrice(), "Assert that the sale price set is the same as the one entered.");
 		assertEquals(endDate, item.getSale().getEndDate(), "Assert that the end date set is the same as the one entered");
+		
+		//Make sure values passed in are correct
+		assertEquals(idCaptor.getValue(), item.getId(), "Assert that the id passed into UserDAO was the item's id.");
+		assertEquals(saleCaptor.getValue(), item.getSale(), "Assert that the id passed into UserDAO was the item's id.");
 		
 		item.setSale(null);
 		service.setSale(item, null, price);
@@ -268,12 +288,12 @@ public class ItemServiceTest {
 		int newQuantity = 10;
 		service.changeAmount(item, newQuantity);
 		
-		assertEquals(item.getAmountInInventory(), newQuantity, "Assert that the amount in inventory is the same as the one entered.");
+		assertEquals(item.getAmount(), newQuantity, "Assert that the amount in inventory is the same as the one entered.");
 		
 		Mockito.verify(dao).writeToFile();
 		
 		service.changeAmount(item, -1);
-		assertEquals(item.getAmountInInventory(), newQuantity, "Assert that the amount in inventory did not change with invalid quantity.");
+		assertEquals(item.getAmount(), newQuantity, "Assert that the amount in inventory did not change with invalid quantity.");
 
 	}
 }

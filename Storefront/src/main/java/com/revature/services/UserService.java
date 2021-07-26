@@ -8,14 +8,18 @@ import org.apache.logging.log4j.Logger;
 
 import com.revature.beans.AccountType;
 import com.revature.beans.CartItem;
+import com.revature.beans.Item;
 import com.revature.beans.Order;
 import com.revature.beans.OrderStatus;
 import com.revature.beans.User;
+import com.revature.data.ItemDAO;
 import com.revature.data.UserDAO;
 
 public class UserService {
 
 	private UserDAO ud = new UserDAO(); // The data handler for users
+
+	private ItemDAO itemDAO = new ItemDAO();
 
 	private static final Logger log = LogManager.getLogger(UserService.class); // Used to create log
 
@@ -63,11 +67,21 @@ public class UserService {
 		return u; // Return the new user object.
 	}
 
+	public User getUser(String username) {
+		log.trace("App is now in getUser.");
+		log.debug("getUser parameters: username: " + username);
+
+		User retUser = ud.getUser(username);
+		log.trace("App is exiting getUser");
+		log.debug("getUser returning User: " + retUser);
+		return retUser;
+	}
+
 	/**
 	 * Checks to see if the user's desired username has been registered or not
 	 * 
 	 * @param username The username the user wants to register with
-	 * @return false if the username has already been registers, true otherwise
+	 * @return false if the username has already been registered, true otherwise
 	 */
 	public Boolean isUsernameUnique(String username) {
 		log.trace("App has entered isUsernameUnique.");
@@ -143,49 +157,57 @@ public class UserService {
 		log.debug("searchUserByName is returning List<User>: " + userList);
 		return userList;
 	}
-	
+
 	/**
 	 * Adds an item to the user's cart
+	 * 
 	 * @param activeUser The user adding the item
-	 * @param itemId The Id of the item
-	 * @param quantity How much of the item is going into the cart
-	 * @param price The current price of the item
+	 * @param itemId     The Id of the item
+	 * @param quantity   How much of the item is going into the cart
+	 * @param price      The current price of the item
 	 */
-	public void addToCart(User activeUser, int itemId, int quantity, double price) {
+	public void addToCart(User activeUser, Item item, int quantity) {
 		log.trace("App has entered addToCart.");
-		log.debug("addToCart Parameters: activeUser: " + activeUser + ", itemId: " + itemId + ", quantity: "
-				+ quantity + ", price: " + price);
-		if (quantity > 0 && price > 0 && activeUser != null) {
+		log.debug("addToCart Parameters: activeUser: " + activeUser + ", item: " + item + ", quantity: " + quantity);
+		if (item != null && quantity > 0 && activeUser != null) {
+			final double price = ((item.getSale() != null) ? item.getSale().getSalePrice() : item.getPrice());
+			log.debug("price set to " + price);
 			// Use a stream to see if the item is already in the cart. Null otherwise.
-			CartItem inCart = activeUser.getCart().stream().filter(c -> c.getItemId() == itemId).findFirst().orElse(null);
+			CartItem inCart = activeUser.getCart().stream().filter(c -> c.getItem().getId() == item.getId()).findFirst()
+					.orElse(null);
 			log.debug("Cart item was found in cart: " + inCart);
 			// The item was not in the cart
 			if (inCart == null) {
-				activeUser.addToCart(itemId, quantity, price);
+				activeUser.getCart().add(new CartItem(activeUser.getCart().size(), item, quantity, price));
 			}
 			// The item is in the cart
 			else {
 				inCart.setQuantity(quantity + inCart.getQuantity());
 				log.debug("User changed the quantity to " + inCart.getQuantity());
 			}
-	
+
 			log.debug(activeUser.getUsername() + " now has a cart of " + activeUser.getCart());
-	
+			itemDAO.removeAmountFromInventory(item.getId(), quantity);
+			log.trace("App has returned to addToCart.");
+			itemDAO.writeToFile();
+			log.trace("App has returned to addToCart.");
 			ud.writeToFile();
 			log.trace("App has returned to addToCart.");
 		}
 		log.trace("App is exiting addToCart.");
 
 	}
+
 	/**
 	 * Creates the order for the user from their cart
+	 * 
 	 * @param activeUser The user creating the order
 	 */
 	public void createOrder(User activeUser) {
 		log.trace("App has entered createOrder.");
 		log.debug("createOrder Parameters: activeUser: " + activeUser);
-		
-		//Makes sure the user actually has something inside their cart
+
+		// Makes sure the user actually has something inside their cart
 		if (!activeUser.getCart().isEmpty()) {
 			activeUser.createOrder(); // Creates the order inside User bean
 			ud.writeToFile();
@@ -193,23 +215,29 @@ public class UserService {
 		}
 		log.trace("App is exiting createOrder.");
 	}
-	
+
 	/**
 	 * Changes the active status of the user
+	 * 
 	 * @param activeUser The user
-	 * @param status The status the user is being changed to
+	 * @param status     The status the user is being changed to
 	 */
 	public void changeActiveStatus(User activeUser, boolean status) {
 		log.trace("App has entered changeActiveStatus.");
 		log.debug("changeActiveStatus Parameters: activeUser: " + activeUser + ", status: " + status);
-		
-		//If the user entered is not null
+
+		// If the user entered is not null
 		if (activeUser != null) {
 			activeUser.setActive(status);
 			log.debug("User status has changed to " + activeUser.isActive());
-			
-			//If the user has stuff in their cart, this will empty their cart
+
+			// If the user has stuff in their cart, this will empty their cart
 			if (!activeUser.getCart().isEmpty()) {
+				activeUser.getCart().stream()
+						// Loop through and increase each item inventory to
+						.forEach((cartItem) -> {
+							itemDAO.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
+						});
 				activeUser.setCart(new ArrayList<CartItem>()); // Empty the cart.
 				log.debug("User status has changed to " + activeUser.getCart());
 			}
@@ -219,64 +247,173 @@ public class UserService {
 		}
 		log.trace("App is exiting changeActiveStatus.");
 	}
-	
+
 	/**
 	 * Changes the quantity to the cartItem to the one specified
+	 * 
 	 * @param cartItem The CartItem being changed
 	 * @param quantity The quantity to change to
 	 */
-	public void changeQuantityInCart(CartItem cartItem, int quantity) {		
+	public void changeQuantityInCart(CartItem cartItem, int quantity) {
 		log.trace("App has entered changeQuantityInCart.");
 		log.debug("changeQuantityInCart Parameters: cartItem: " + cartItem + ", quantity: " + quantity);
-		
-		//The CartItem passed in isn't null and the quantity is greater than zero
+
+		// The CartItem passed in isn't null and the quantity is greater than zero
 		if (cartItem != null && quantity > 0) {
-			cartItem.setQuantity(quantity); //Set the quantity
+			// Get the item
+			Item item = itemDAO.getItem(cartItem.getItem().getId());
+
+			// Check and see if the item exists and the quantity is not bigger than the
+			// total quantity
+			if (item == null || quantity > item.getAmount() + cartItem.getQuantity()) {
+				return;
+			}
+
+			// If the cartItem is losing quantity
+			if (quantity < cartItem.getQuantity()) {
+				itemDAO.addAmountToInventory(item.getId(), quantity);
+			}
+			// If the cartItem is gaining quantity
+			else if (quantity > cartItem.getQuantity()) {
+				itemDAO.removeAmountFromInventory(item.getId(), quantity);
+
+			}
+
+			cartItem.setQuantity(quantity); // Set the quantity
 			log.debug("cartItem quantity is now " + cartItem.getQuantity());
 			ud.writeToFile();
+			log.trace("App has returned to changeQuantityInCart.");
+			itemDAO.writeToFile();
 			log.trace("App has returned to changeQuantityInCart.");
 
 		}
 		log.trace("App is exiting changeQuantityInCart.");
 	}
-	
+
+	/**
+	 * Changes the quantity to the cartItem to the one specified
+	 * 
+	 * @param user       The user that's getting rid of a cart item
+	 * @param cartItemId The id of the CartItem being changed
+	 */
+	public void removeFromCart(User user, int cartItemId) {
+		log.trace("App has entered removeFromCart.");
+		log.debug("removeFromCart Parameters: user: " + user + ", cartItemId: " + cartItemId);
+		if (user != null) {
+
+			CartItem cartItem = user.getCart().stream().filter((ci) -> (ci.getId() == cartItemId)).findFirst()
+					.orElse(null);
+
+			log.debug("cartItem: " + cartItem);
+			// The CartItem passed in isn't null and the quantity is greater than zero
+			if (cartItem != null) {
+				int quantity = cartItem.getQuantity();
+				int itemId = cartItem.getItem().getId();
+				user.getCart().remove(cartItem);
+
+				// Loop through and make sure each id gets changed correctly
+				for (int i = cartItemId; i < user.getCart().size(); i++) {
+					user.getCart().get(i).setId(i);
+				}
+				itemDAO.addAmountToInventory(itemId, quantity);
+				ud.writeToFile();
+				log.trace("App has returned to removeFromCart");
+				itemDAO.writeToFile();
+				log.trace("App has returned to removeFromCart");
+
+			}
+		}
+		log.trace("App is exiting removeFromCart.");
+	}
+
 	/**
 	 * Changes the OrderStatus of a specified Order
-	 * @param order The Order being modified
+	 * 
+	 * @param order  The Order being modified
 	 * @param status The OrderStatus the Order is setting
 	 */
 	public void changeOrderStatus(Order order, OrderStatus status) {
 		log.trace("App has entered changeOrderStatus.");
 		log.debug("changeOrderStatus Parameters: order: " + order + ", status: " + status);
-		
-		//If the order and status are not null
+
+		// If the order and status are not null
 		if (order != null && status != null) {
-			order.setStatus(status); //Changes the status
+			order.setStatus(status); // Changes the status
 			log.debug("order status is now " + order.getStatus());
+			// If the order is being cancelled (wasn't shipped yet), the items will go back
+			// to inventory.
+			if (status.equals(OrderStatus.CANCELLED)) {
+				order.getItemsOrdered().stream().forEach((orderItem) -> {
+					itemDAO.addAmountToInventory(orderItem.getItem().getId(), orderItem.getQuantity());
+					log.trace("App has returned to changeOrderStatus.");
+
+				});
+				itemDAO.writeToFile();
+				log.trace("App has returned to changeOrderStatus.");
+
+			}
 			ud.writeToFile();
 			log.trace("App has returned to changeOrderStatus.");
 		}
 		log.trace("App is exiting changeOrderStatus.");
 	}
-	
+
 	/**
 	 * Changes the CartItem price to the one specified
+	 * 
 	 * @param cartItem The CartItem being modified
-	 * @param price The price the CartItem is being set to
+	 * @param price    The price the CartItem is being set to
 	 */
 	public void changeCartItemPrice(CartItem cartItem, double price) {
 		log.trace("App has entered changeCartItemPrice.");
 		log.debug("changeCartItemPrice Parameters: cartItem: " + cartItem + ", price: " + price);
-		
-		//If the cart item passed in wasn't and null and the price is greater than zero
+
+		// If the cart item passed in wasn't and null and the price is greater than zero
 		if (cartItem != null && price > 0.0) {
-			cartItem.setPrice(price); //Set the price
+			cartItem.setPrice(price); // Set the price
 			log.debug("cartItem price is now " + cartItem.getPrice());
 			ud.writeToFile();
 			log.trace("App has returned to changeCartItemPrice.");
 
 		}
 		log.trace("App is exiting changeCartItemPrice.");
+	}
+
+	/**
+	 * Changes the user email
+	 * 
+	 * @param user     The user that is changing their email
+	 * @param newEmail The new email of the user
+	 */
+	public void updateEmail(User user, String newEmail) {
+		log.trace("App has entered updateEmail");
+		log.debug("updateEmail parameters: user" + user + ", newEmail: " + newEmail);
+
+		user.setEmail(newEmail);
+		log.debug("user email set to " + user.getEmail());
+		ud.writeToFile();
+		log.trace("App has returned to updateEmail");
+		log.trace("App is exiting updateEmail");
+
+	}
+
+	/**
+	 * Changes the user password
+	 * 
+	 * @param user        The user that is changing their password
+	 * @param newPassword The new password of the user
+	 */
+	public void updatePassword(User user, String newPassword) {
+		log.trace("App has entered updatePassword");
+		log.debug("updatePassword parameters: user" + user + ", newPassword: " + newPassword);
+
+		user.setPassword(newPassword);
+		log.debug("user password set to " + user.getPassword());
+		ud.writeToFile();
+		log.trace("App has returned to updatePassword");
+
+		log.trace("App is exiting updatePassword");
+
 	}
 
 }

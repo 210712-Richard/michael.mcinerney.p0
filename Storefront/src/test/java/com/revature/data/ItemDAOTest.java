@@ -1,9 +1,6 @@
 package com.revature.data;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -12,8 +9,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
@@ -58,36 +53,13 @@ public class ItemDAOTest {
 
 	@Test
 	public void testAddItem() {
-		// Note: Test only works this way because it comes after testGetItem. If that
-		// changes or if more tests are added, will need to comment out Mockito items.
-		inv = mock.setPrivateMock(dao, "inventory");
 		// Create the Item object and add it to the list.
 		Item i = new Item(-1, "TestAddItem", 20.00, 10, ItemCategory.COMPUTER_ACCESSORY, "This is a test.");
 		Item isAdded = dao.addItem(i);
-
-		// Verify size and add were called.
-		ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
-		Mockito.verify(inv).add(captor.capture());
-		Mockito.verify(inv).size();
-
-		// Making sure the item matches the one passed in.
-		Item capture = captor.getValue(); // Get the method that was passed in.
-		assertEquals(i.getName(), capture.getName(), "Assert that item added has the same name.");
-		assertEquals(i.getPrice(), capture.getPrice(), "Assert that the item added has the same price.");
-		assertEquals(i.getAmountInInventory(), capture.getAmountInInventory(),
-				"Assert that the item added has the same amount in inventory.");
-		assertEquals(i.getCategory(), capture.getCategory(), "Assert that the item added has the same category.");
-		assertEquals(i.getDescription(), capture.getDescription(),
-				"Assert that the item added has the same description.");
-		assertNull("Assert that there is no sale added to the item.", capture.getSale());
-
-		// Make sure a successful add returns item.
-		assertNotNull(isAdded, "Assert that the method returns true upon success.");
-
-		// If the item added was null, it should return null.
-		assertNull("Assert that null item returns null", dao.addItem(null));
 		
-		
+		assertTrue(dao.getInventory().contains(isAdded), "Assert that the item was added to inventory.");
 
 	}
+
+
 }

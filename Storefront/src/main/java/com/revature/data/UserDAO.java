@@ -3,14 +3,13 @@ package com.revature.data;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.revature.beans.AccountType;
-import com.revature.beans.CartItem;
 import com.revature.beans.OrderStatus;
+import com.revature.beans.Sale;
 import com.revature.beans.User;
 
 public class UserDAO {
@@ -44,22 +43,29 @@ public class UserDAO {
 			log.debug("Initialized list of default users: " + users);
 		}
 
-
 		// This will look through each order and change each order whose shipped date
 		// has passed to a status of SHIPPED
-		users.stream()
-		.forEach((u) -> { // Loop through each user
-			u.getPastOrders().stream()
-			.filter((order) -> { // Filter the orders by if they are ORDERED and their shipped
+		users.stream().forEach((u) -> { // Loop through each user
+			u.getOrders().stream().filter((order) -> { // Filter the orders by if they are ORDERED and their shipped
 															// date has passed
-				return (order.getStatus() == OrderStatus.ORDERED 
-						&& (order.getShipDate().isBefore(LocalDate.now())
+				return (order.getStatus() == OrderStatus.ORDERED && (order.getShipDate().isBefore(LocalDate.now())
 						|| order.getShipDate().isEqual(LocalDate.now())));
-			})
-			.forEach((order) -> { // For each order whose shipped date has passed and needs a status change
+			}).forEach((order) -> { // For each order whose shipped date has passed and needs a status change
 				order.setStatus(OrderStatus.SHIPPED);
 			});
 		});
+
+		// Loop through the cart and alter all items with an expired sale or with no sale but incorrect prices.
+		users.stream().filter((user) -> !user.getCart().isEmpty())
+				.forEach((user) -> user.getCart().stream()
+						.filter((cartItem) -> ((cartItem.getItem().getPrice() != cartItem.getPrice() 
+							&& cartItem.getItem().getSale() == null) 
+							|| (cartItem.getItem().getSale() != null
+							&& LocalDate.now().isAfter(cartItem.getItem().getSale().getEndDate()))))
+						.forEach((cartItem) -> {
+							cartItem.getItem().setSale(null);
+							cartItem.setPrice(cartItem.getItem().getPrice());
+						}));
 	}
 
 	/**
@@ -91,6 +97,35 @@ public class UserDAO {
 		for (User u : users) { // Iterate through each User
 			// If the username and password of a User is the same as the parameters
 			if (username.equals(u.getUsername()) && password.equals(u.getPassword())) {
+				log.trace("App is now leaving getUser.");
+				log.debug("getUser is returning User: " + u);
+				return u; // Return the correct User
+			}
+		}
+		log.trace("App is now leaving getUser.");
+		log.debug("getUser is returning User: " + null);
+		return null; // Returns null if no matching user was found.
+	}
+
+	/**
+	 * Get the user based on the username
+	 * 
+	 * @param username The username of the User to get
+	 * @return The User with the same username and password
+	 */
+	public User getUser(String username) {
+		log.trace("App has entered getUser.");
+		log.debug("getUser Parameters: username: " + username);
+		// if the username is null or blank
+		if (username == null) {
+			log.warn("The username and/or password is null or empty");
+			log.trace("App is leaving getUser");
+			log.debug("getUser is returning " + null);
+			return null;
+		}
+		for (User u : users) { // Iterate through each User
+			// If the username of a User is the same as the parameters
+			if (username.equals(u.getUsername())) {
 				log.trace("App is now leaving getUser.");
 				log.debug("getUser is returning User: " + u);
 				return u; // Return the correct User
@@ -155,6 +190,64 @@ public class UserDAO {
 		log.trace("App is now leaving findUsersByName.");
 		log.debug("findUsersByName is returning List<User>: " + retUsers);
 		return retUsers;
+	}
+
+	/**
+	 * Goes through each item with the same itemId and set the Sale
+	 * @param itemId The id of the item being changed
+	 * @param sale The sale of the item
+	 */
+	public void setSaleInCarts(int itemId, Sale sale) {
+		log.trace("App has entered setSaleInCarts.");
+		log.debug("setSaleInCarts Parameters: itemId: " + itemId + ", sale: " + sale);
+		users.stream()
+		//Filter the users by which have an active cart
+		.filter((user)->!user.getCart().isEmpty())
+		//Loop through the users' carts
+		.forEach((user)->user.getCart().stream()
+				//Only get the ones that have the correct id.
+				.filter((cartItem)->(cartItem.getItem().getId() == itemId))
+				//Loop through each cart item
+				.forEach((cartItem)-> {
+					
+					cartItem.getItem().setSale(sale); //Set the sale
+					if (sale == null) { //The sale probably ended
+						cartItem.setPrice(cartItem.getItem().getPrice());
+
+					} else { // A new sale is being added
+						cartItem.setPrice(cartItem.getItem().getSale().getSalePrice());
+					}
+					log.debug("cartItem price has been set to " + cartItem.getPrice());
+				}));
+		log.trace("App is exiting setSaleInCarts");
+	}
+	
+	/**
+	 * Goes through each item with the same itemId and set the price
+	 * @param itemId The id of the item being changed
+	 * @param price The new price of the item
+	 */
+	public void setPriceInCarts(int itemId, double price) {
+		log.trace("App has entered setPriceInCarts.");
+		log.debug("setSaleInCarts Parameters: itemId: " + itemId + ", price: " + price);
+		users.stream()
+		//Filter the users by which have an active cart
+		.filter((user)->!user.getCart().isEmpty())
+		//Loop through the users' carts
+		.forEach((user)->user.getCart().stream()
+				//Only get the ones that have the correct id.
+				.filter((cartItem)->(cartItem.getItem().getId() == itemId))
+				//Loop through each cart item
+				.forEach((cartItem)-> {
+					//Correct the price
+					cartItem.getItem().setPrice(price);
+					
+					//If there isn't a sale right now
+					if (cartItem.getItem().getSale() == null) {
+						cartItem.setPrice(price);
+					}
+				}));
+		log.trace("App is exiting setPriceInCarts");
 	}
 
 	/**
