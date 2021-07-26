@@ -107,7 +107,7 @@ public class ItemServiceTest {
 		// Make sure that the item created has the same fields as the parameters.
 		assertEquals(i.getName(), name, "Assert that name remains the same.");
 		assertEquals(i.getPrice(), price, "Assert that price remains the same.");
-		assertEquals(i.getAmountInInventory(), amount, "Assert that amount remains the same.");
+		assertEquals(i.getAmount(), amount, "Assert that amount remains the same.");
 		assertEquals(i.getCategory(), category, "Assert that the category remains the same.");
 		assertEquals(i.getDescription(), desc, "Assert that the description remains the same.");
 		assertNull("Assert that the sale object is null.", i.getSale());
@@ -166,7 +166,7 @@ public class ItemServiceTest {
 		Item i = captor.getValue();
 		assertEquals(i.getName(), name, "Assert that name remains the same.");
 		assertEquals(i.getPrice(), price, "Assert that price remains the same.");
-		assertEquals(i.getAmountInInventory(), amount, "Assert that amount remains the same.");
+		assertEquals(i.getAmount(), amount, "Assert that amount remains the same.");
 		assertEquals(i.getCategory(), category, "Assert that the category remains the same.");
 		assertEquals(i.getDescription(), desc, "Assert that the description remains the same.");
 
@@ -176,7 +176,7 @@ public class ItemServiceTest {
 	public void testUpdateItem() {
 		// editItem should return Item and should call writeToFile();
 		dao = mock.setPrivateMock(service, "iDAO");
-		item.setAmountInInventory(0);
+		item.setAmount(0);
 		Item retItem = service.updateItem(item);
 
 		// Verify method was called
@@ -288,12 +288,12 @@ public class ItemServiceTest {
 		int newQuantity = 10;
 		service.changeAmount(item, newQuantity);
 		
-		assertEquals(item.getAmountInInventory(), newQuantity, "Assert that the amount in inventory is the same as the one entered.");
+		assertEquals(item.getAmount(), newQuantity, "Assert that the amount in inventory is the same as the one entered.");
 		
 		Mockito.verify(dao).writeToFile();
 		
 		service.changeAmount(item, -1);
-		assertEquals(item.getAmountInInventory(), newQuantity, "Assert that the amount in inventory did not change with invalid quantity.");
+		assertEquals(item.getAmount(), newQuantity, "Assert that the amount in inventory did not change with invalid quantity.");
 
 	}
 }

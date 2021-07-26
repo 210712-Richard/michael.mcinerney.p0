@@ -66,11 +66,19 @@ public class Driver {
 		app.put("/users/:username/orders/:orderId", userControl::changeOrderStatus);
 		
 		// As a manager, I can add items to the inventory.
-
+		app.post("/items", itemControl::addItem);
+		
 		// As a manager, I can edit amount in inventory of items.
+		app.put("items/:itemId/amount", itemControl::changeAmountOfItem);
+		
+		//As a manager, I can modify the price of items
+		app.put("items/:itemId/price", itemControl::changePriceOfItem);
 
 		// As a manager, I can add limited time deals for items.
-
+		app.put("items/:itemId/sale", itemControl::putSaleInItem);
+		
+		//Remove the sale early
+		app.delete("items/:itemId/sale", itemControl::removeSaleInItem);
 		
 	}
 }

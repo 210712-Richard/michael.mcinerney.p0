@@ -87,7 +87,7 @@ public class ItemDAO {
 			for (Item item : inventory) { // Loop through each item in the inventory
 				// If the item belongs to the correct category and is either in stock or
 				// onlyInStock is false.
-				if (item.getCategory() == category && (!onlyInStock || item.getAmountInInventory() > 0)) {
+				if (item.getCategory() == category && (!onlyInStock || item.getAmount() > 0)) {
 					log.debug("Item added to list: " + item);
 					retList.add(item); // Add the item to the return list.
 				}
@@ -136,7 +136,7 @@ public class ItemDAO {
 		//If the item is not null and the quantity is a non-negative number
 		if (item != null && quantity >= 0) {
 			//Adds the quantity to the current amount in inventory
-			item.setAmountInInventory(item.getAmountInInventory() + quantity);
+			item.setAmount(item.getAmount() + quantity);
 		}
 		writeToFile();
 		log.trace("User is exiting addAmountToInventory.");
@@ -153,11 +153,11 @@ public class ItemDAO {
 		Item item = getItem(itemId); //Get the actual item with the itemId
 		
 		//If the item is no not null, and the quantity is greater than zero but less than the current inventory
-		if (item != null && quantity > 0 && quantity <= item.getAmountInInventory()) {
+		if (item != null && quantity > 0 && quantity <= item.getAmount()) {
 			
 			//Subtract the quantity from the amount in inventory already
-			item.setAmountInInventory(item.getAmountInInventory() - quantity);
-			log.debug("item quantity was set to " + item.getAmountInInventory());
+			item.setAmount(item.getAmount() - quantity);
+			log.debug("item quantity was set to " + item.getAmount());
 		}
 		writeToFile();
 		log.trace("App has returned to removeAmountFromInventory.");

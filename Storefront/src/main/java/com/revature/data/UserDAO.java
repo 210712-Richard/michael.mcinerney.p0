@@ -221,6 +221,34 @@ public class UserDAO {
 				}));
 		log.trace("App is exiting setSaleInCarts");
 	}
+	
+	/**
+	 * Goes through each item with the same itemId and set the price
+	 * @param itemId The id of the item being changed
+	 * @param price The new price of the item
+	 */
+	public void setPriceInCarts(int itemId, double price) {
+		log.trace("App has entered setPriceInCarts.");
+		log.debug("setSaleInCarts Parameters: itemId: " + itemId + ", price: " + price);
+		users.stream()
+		//Filter the users by which have an active cart
+		.filter((user)->!user.getCart().isEmpty())
+		//Loop through the users' carts
+		.forEach((user)->user.getCart().stream()
+				//Only get the ones that have the correct id.
+				.filter((cartItem)->(cartItem.getItem().getId() == itemId))
+				//Loop through each cart item
+				.forEach((cartItem)-> {
+					//Correct the price
+					cartItem.getItem().setPrice(price);
+					
+					//If there isn't a sale right now
+					if (cartItem.getItem().getSale() == null) {
+						cartItem.setPrice(price);
+					}
+				}));
+		log.trace("App is exiting setPriceInCarts");
+	}
 
 	/**
 	 * Save the current list of users to the file

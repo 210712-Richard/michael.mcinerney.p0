@@ -182,20 +182,47 @@ public class ItemService {
 	/**
 	 * Changes the amount of an Item
 	 * @param item The Item being changed
-	 * @param newQuantity The quantity the Item is being set to
+	 * @param newAmount The quantity the Item is being set to
 	 */
-	public void changeAmount(Item item, int newQuantity) {
+	public void changeAmount(Item item, int newAmount) {
 		log.trace("User has entered changeAmount");
-		log.debug("endSale parameters: item: " + item, ", newQuantity: "+ newQuantity);
+		log.debug("endSale parameters: item: " + item, ", newAmount: "+ newAmount);
 		
 		//If the item is not null and is getting a non-negative quantity
-		if (item != null && newQuantity >= 0) {
+		if (item != null && newAmount >= 0) {
 			//Sets the amount
-			item.setAmountInInventory(newQuantity);
-			log.debug("item amountInInventory changed to " + item.getAmountInInventory());
+			item.setAmount(newAmount);
+			log.debug("item amount changed to " + item.getAmount());
 		}
 		iDAO.writeToFile();
 		log.trace("App has returned to changeAmount.");
 		log.trace("App is exiting changeAmount.");
+	}
+	
+	/**
+	 * Changes the price of an Item
+	 * @param item The Item being changed
+	 * @param newPrice The price the Item is being set to
+	 */
+	public void changePrice(Item item, double newPrice) {
+		log.trace("User has entered changePrice");
+		log.debug("endSale parameters: item: " + item, ", newPrice: "+ newPrice);
+		
+		//If the item is not null and is getting a non-negative quantity
+		if (item != null && newPrice > 0.0) {
+			//Sets the amount
+			item.setPrice(newPrice);
+			log.debug("item price changed to " + item.getPrice());
+			
+			//Set the price in the items in the cart
+			userDAO.setPriceInCarts(item.getId(), newPrice);
+			log.trace("App has returned to changePrice.");
+			
+			userDAO.writeToFile();
+			log.trace("App has returned to changePrice.");
+		}
+		iDAO.writeToFile();
+		log.trace("App has returned to changePrice.");
+		log.trace("App is exiting changePrice.");
 	}
 }

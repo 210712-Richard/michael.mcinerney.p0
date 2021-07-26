@@ -265,7 +265,7 @@ public class UserService {
 
 			// Check and see if the item exists and the quantity is not bigger than the
 			// total quantity
-			if (item == null || quantity > item.getAmountInInventory() + cartItem.getQuantity()) {
+			if (item == null || quantity > item.getAmount() + cartItem.getQuantity()) {
 				return;
 			}
 

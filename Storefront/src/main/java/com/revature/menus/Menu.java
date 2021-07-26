@@ -146,7 +146,7 @@ public class Menu {
 						final int quantity = getUserInput();
 						// If the quantity is greater than zero and under or equal to the amount in
 						// inventory
-						if (quantity > 0 && quantity <= item.getAmountInInventory()) {
+						if (quantity > 0 && quantity <= item.getAmount()) {
 							// Reduce the inventory amount by the quantity.
 							// If the item is on sale, get the sale price, otherwise, get the item price
 							
@@ -237,7 +237,7 @@ public class Menu {
 			if (selection >= 0 && selection < cartSize) { // If the selection is in the index range of the cart.
 				Item i = activeUser.getCart().get(selection).getItem();
 				log.debug("Item selected is " + i);
-				int maxQuantity = activeUser.getCart().get(selection).getQuantity() + i.getAmountInInventory();
+				int maxQuantity = activeUser.getCart().get(selection).getQuantity() + i.getAmount();
 
 				log.debug("maxQuantity is set to: " + maxQuantity);
 
@@ -254,7 +254,7 @@ public class Menu {
 					us.removeFromCart(activeUser, selection);
 					
 					log.trace(activeUser.getUsername() + " is back in customerCartMenu");
-					log.debug("items new amount is now " + i.getAmountInInventory());
+					log.debug("items new amount is now " + i.getAmount());
 					System.out.println(i.getName() + " removed.");
 					
 				//Changes the quantity of one of the items in the cart
@@ -548,7 +548,7 @@ public class Menu {
 					is.changeAmount(item, newQuantity);
 					log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
 					log.debug("item has been set to " + item);
-					System.out.println(item.getName() + " amount is now " + item.getAmountInInventory());
+					System.out.println(item.getName() + " amount is now " + item.getAmount());
 					break editLoop;
 				} else {
 					log.info(activeUser.getUsername() + " entered an invalid quantity.");
@@ -1010,7 +1010,7 @@ public class Menu {
 								+ priceFormat.format(item.getSale().getSalePrice());
 					}
 					// Print the price and amount in stock
-					System.out.println("\t\t" + priceString + " Amount In Stock: " + item.getAmountInInventory());
+					System.out.println("\t\t" + priceString + " Amount In Stock: " + item.getAmount());
 					System.out.println("\t\t" + item.getDescription()); // Print the description
 					System.out.println(""); // New line to seperate items.
 				}

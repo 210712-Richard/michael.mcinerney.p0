@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.revature.beans.AccountType;
 import com.revature.beans.CartItem;
+import com.revature.beans.Item;
 import com.revature.beans.Order;
 import com.revature.beans.OrderStatus;
 import com.revature.beans.User;
@@ -327,22 +328,33 @@ public class UserController {
 		// If the item is null or object in body is null
 		if (cartItem == null || cartItem.getItem() == null) {
 			ctx.status(404);
+			ctx.html("No cart item was found.");
+			log.trace("App is leaving addToCart.");
+			return;
+		}
+		
+		//Get the item from the service
+		Item item = itemService.getItem(cartItem.getItem().getId());
+		log.debug("Item from itemService: " + item);
+		
+		//If the item was not found
+		if (item == null) {
+			ctx.status(404);
 			ctx.html("No item was found.");
 			log.trace("App is leaving addToCart.");
 			return;
 		}
-
 		// If the item quantity was less than or equal to zero, or greater than the
 		// item's current quantity
-		if (cartItem.getQuantity() <= 0 || cartItem.getQuantity() > cartItem.getItem().getAmountInInventory()
-				|| cartItem.getItem().getAmountInInventory() <= 0) {
+		if (cartItem.getQuantity() <= 0 || cartItem.getQuantity() > item.getAmount()
+				|| cartItem.getItem().getAmount() <= 0) {
 			ctx.status(400);
 			ctx.html("Quantity is invalid.");
 			log.trace("App is leaving addToCart.");
 			return;
 		}
 		// Add the item to the cart.
-		userService.addToCart(loggedUser, cartItem.getItem(), cartItem.getQuantity());
+		userService.addToCart(loggedUser, item, cartItem.getQuantity());
 		log.trace("App has returned to addToCart.");
 
 		ctx.json(loggedUser.getCart());
