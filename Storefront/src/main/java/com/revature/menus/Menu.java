@@ -405,8 +405,9 @@ public class Menu {
 			System.out.println("Please select if you want to add a new item or edit an existing item's quantity: ");
 			System.out.println("\t1. Add Item");
 			System.out.println("\t2. Add or Remove Sale");
-			System.out.println("\t3. Edit Exisiting Item Quantity");
-			System.out.println("\t4. Back");
+			System.out.println("\t3. Edit Exisiting Item Amount");
+			System.out.println("\t4. Edit Price of an Item");
+			System.out.println("\t5. Back");
 			int selection = getUserInput();
 			log.trace(activeUser.getUsername() + " has returned to editInventoryMenu");
 			switch (selection) {
@@ -543,7 +544,7 @@ public class Menu {
 				}
 				System.out.println("Please enter the new quantity of " + item.getName() + " in inventory: ");
 				int newQuantity = getUserInput();
-				if (newQuantity > 0) { // The user entered a positive or 0 quantity
+				if (newQuantity >= 0) { // The user entered a positive or 0 quantity
 					log.info("Item quantity is being changed.");
 					is.changeAmount(item, newQuantity);
 					log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
@@ -556,6 +557,29 @@ public class Menu {
 					break;
 				}
 			case 4:
+				// Edit Existing Item Amount
+				System.out.println("Edit Inventory Amount");
+				Item getItem = searchItemMenu(false);
+				log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+				if (getItem == null) { // User wanted to go back
+					log.info(activeUser.getUsername() + " is going back.");
+					break;
+				}
+				System.out.println("Please enter the new price of " + getItem.getName() + " in inventory: ");
+				double editPrice = getUserDouble();
+				if (editPrice > 0.0) { // The user entered a positive or 0 quantity
+					log.info("Item quantity is being changed.");
+					is.changePrice(getItem, editPrice);
+					log.trace(activeUser.getUsername() + " has returned to editInventoryMenu.");
+					log.debug("item has been set to " + getItem);
+					System.out.println(getItem.getName() + " amount is now " + getItem.getPrice());
+					break editLoop;
+				} else {
+					log.info(activeUser.getUsername() + " entered an invalid quantity.");
+					System.out.println("Invalid input. Please try again.");
+					break;
+				}
+			case 5:
 				// Go back
 				break editLoop;
 			default:
