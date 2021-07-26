@@ -46,7 +46,7 @@ public class UserDAO {
 		// This will look through each order and change each order whose shipped date
 		// has passed to a status of SHIPPED
 		users.stream().forEach((u) -> { // Loop through each user
-			u.getPastOrders().stream().filter((order) -> { // Filter the orders by if they are ORDERED and their shipped
+			u.getOrders().stream().filter((order) -> { // Filter the orders by if they are ORDERED and their shipped
 															// date has passed
 				return (order.getStatus() == OrderStatus.ORDERED && (order.getShipDate().isBefore(LocalDate.now())
 						|| order.getShipDate().isEqual(LocalDate.now())));

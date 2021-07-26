@@ -178,7 +178,7 @@ public class Menu {
 			case 3:
 				// View and edit orders
 				System.out.println("Here are you orders: ");
-				orderEditMenu(activeUser.getPastOrders(), true);
+				orderEditMenu(activeUser.getOrders(), true);
 				log.trace(activeUser.getUsername() + " has returned to openCustomerMenu");
 				break;
 			case 4:
@@ -365,7 +365,7 @@ public class Menu {
 				User user = searchUsernameMenu(AccountType.CUSTOMER, false); // Search for the user
 				log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
 				if (user != null) { // The user selected a valid User
-					orderEditMenu(user.getPastOrders(), false); // Find the order to refund
+					orderEditMenu(user.getOrders(), false); // Find the order to refund
 					log.trace(activeUser.getUsername() + " is back in openManagerMenu.");
 				}
 

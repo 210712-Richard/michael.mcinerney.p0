@@ -20,6 +20,7 @@ public class Order implements Serializable{
 	}
 	public Order(int id, List<CartItem> itemsOrdered, LocalDate orderDate, LocalDate shipDate, double total) {
 		this();
+		this.id = id;
 		this.itemsOrdered = itemsOrdered;
 		this.orderDate = orderDate;
 		this.shipDate = shipDate;

@@ -5,7 +5,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.revature.beans.AccountType;
 import com.revature.beans.CartItem;
-import com.revature.beans.Item;
+import com.revature.beans.Order;
+import com.revature.beans.OrderStatus;
 import com.revature.beans.User;
 import com.revature.services.ItemService;
 import com.revature.services.UserService;
@@ -347,9 +348,10 @@ public class UserController {
 		ctx.json(loggedUser.getCart());
 		log.trace("App is leaving addToCart.");
 	}
-	
+
 	/**
 	 * Remove an item from the cart
+	 * 
 	 * @param ctx
 	 */
 	public void removeFromCart(Context ctx) {
@@ -382,13 +384,14 @@ public class UserController {
 		ctx.json(loggedUser.getCart());
 		log.trace("App is leaving removeFromCart.");
 	}
-	
+
 	/**
 	 * Change the quantity of an item in the cart
+	 * 
 	 * @param ctx The context
 	 */
 	public void changeQuantityOfCartItem(Context ctx) {
-		
+
 		log.trace("App has entered changeQuantityOfCartItem.");
 		log.debug("Request body: " + ctx.body());
 
@@ -401,7 +404,7 @@ public class UserController {
 		log.debug("Username from path: " + username);
 		int cartItemId = Integer.parseInt(ctx.pathParam("cartItemId"));
 		log.debug("cartItemId from path: " + cartItemId);
-		
+
 		// If the user is not logged in, is trying to access another user's cart, or is
 		// not a customer
 		if (loggedUser == null || !loggedUser.getUsername().equals(username)
@@ -410,18 +413,16 @@ public class UserController {
 			log.trace("App is leaving changeQuantityOfCartItem.");
 			return;
 		}
-		
-		//Get the CartItem from the users cart using cartItemId
-		CartItem cartItem = loggedUser.getCart().stream()
-				.filter((cI)->cI.getId() == cartItemId)
-				.findFirst()
+
+		// Get the CartItem from the users cart using cartItemId
+		CartItem cartItem = loggedUser.getCart().stream().filter((cI) -> cI.getId() == cartItemId).findFirst()
 				.orElse(null);
 		log.debug("CartItem from cart: " + cartItem);
-		
+
 		// Get the quantity from the body.
 		CartItem cartItemQuantity = ctx.bodyAsClass(CartItem.class);
 		log.debug("CartItem from ctx.body(): " + cartItemQuantity);
-		
+
 		// If the object in body is null
 		if (cartItemQuantity == null || cartItem == null) {
 			ctx.status(404);
@@ -437,8 +438,128 @@ public class UserController {
 		ctx.json(loggedUser.getCart());
 		log.trace("App is leaving changeQuantityOfCartItem.");
 	}
-	
+
+	/**
+	 * Creates an order using the logged in user's cart
+	 * 
+	 * @param ctx The context. The body will not be read
+	 */
 	public void createOrder(Context ctx) {
+		log.trace("App has entered createOrder.");
+		log.debug("Request body: " + ctx.body());
+
+		User loggedUser = ctx.sessionAttribute("loggedUser");
+		log.debug("loggedUser: " + loggedUser);
+
+		// Get the username and cartItemId from the path
+		String username = ctx.pathParam("username");
+		log.debug("Username from path: " + username);
+
+		// If the user is not logged in, is trying to access another user's cart, or is
+		// not a customer
+		if (loggedUser == null || !loggedUser.getUsername().equals(username)
+				|| !loggedUser.getAccountType().equals(AccountType.CUSTOMER)) {
+			ctx.status(403);
+			log.trace("App is leaving createOrder.");
+			return;
+		}
+
+		// If the user does not have a cart to make into an order
+		if (loggedUser.getCart().isEmpty()) {
+			ctx.status(404);
+			ctx.html("There is nothing in the cart to order.");
+			log.trace("App is leaving createOrder.");
+			return;
+		}
+
+		// Create the order
+		userService.createOrder(loggedUser);
+
+		// Return no content
+		ctx.status(204);
+		log.trace("App is leaving createOrder.");
+	}
+	
+	/**
+	 * Change the status of an order
+	 * @param ctx The context
+	 */
+	public void changeOrderStatus(Context ctx) {
+		log.trace("App has entered changeOrderStatus.");
+		log.debug("Request body: " + ctx.body());
+
+		User loggedUser = ctx.sessionAttribute("loggedUser");
+		log.debug("loggedUser: " + loggedUser);
+
+		// Get the username and cartItemId from the path
+		String username = ctx.pathParam("username");
+		log.debug("Username from path: " + username);
+		int orderId = Integer.parseInt(ctx.pathParam("orderId"));
+		log.debug("orderId from path: " + orderId);
+
+		// If the user is not logged in, or is an admin, or is a customer and is trying
+		// to access another user's order
+		if (loggedUser == null || loggedUser.getAccountType().equals(AccountType.ADMINISTRATOR)
+				|| (loggedUser.getAccountType().equals(AccountType.CUSTOMER)
+						&& !loggedUser.getUsername().equals(username))) {
+			ctx.status(403);
+			log.trace("App is leaving changeOrderStatus.");
+			return;
+		}
+
+		// Get the order status and order to change
+		OrderStatus orderStatus = ctx.bodyAsClass(Order.class).getStatus();
+		Order order = loggedUser.getUsername().equals(username)
+				
+				//The user is logged in so the order will come from there
+				? loggedUser.getOrders().stream()
+				.filter((o) -> o.getId() == orderId)
+				.findFirst()
+				.orElse(null)
+				
+				//A manager is trying to change another user so the order will come from there
+				: userService.getUser(username).getOrders().stream()
+				.filter((o) -> o.getId() == orderId)
+				.findFirst()
+				.orElse(null);
+		log.debug("Order is: "+ order);
 		
+		AccountType type = loggedUser.getAccountType();
+		
+		// If the order or status is null
+		if (order == null || orderStatus == null) {
+			ctx.status(404);
+			ctx.html("No order or order status to change.");
+			log.trace("App is leaving changeOrderStatus.");
+			return;
+		}
+		
+		// If the user is a customer, the user can only change ordered orders to
+		// cancelled.
+		if (type.equals(AccountType.CUSTOMER) && orderStatus.equals(OrderStatus.CANCELLED)
+				&& order.getStatus().equals(OrderStatus.ORDERED)) {
+			userService.changeOrderStatus(order, orderStatus);
+			ctx.json(order);
+			log.trace("App is leaving changeOrderStatus.");
+			return;
+		}
+		
+		//If the user is a manager, and is 
+		//trying to cancel an ordered order 
+		//or refund a shipped order
+		if (type.equals(AccountType.MANAGER) && ((orderStatus.equals(OrderStatus.CANCELLED)
+				&& order.getStatus().equals(OrderStatus.ORDERED)) 
+				|| (orderStatus.equals(OrderStatus.REFUNDED)
+				&& order.getStatus().equals(OrderStatus.SHIPPED)))) {
+			userService.changeOrderStatus(order, orderStatus);
+			ctx.json(order);
+			log.trace("App is leaving changeOrderStatus.");
+			return;
+		}
+		
+		//Left the order without making the change
+		ctx.status(403);
+		log.trace("App is leaving changeOrderStatus.");
+
 	}
 }

@@ -76,7 +76,7 @@ public class UserDAOTest {
 
 		// The default values are set.
 		assertTrue(newUser.getCart().isEmpty(), "Assert that the new User has an empty cart initialized.");
-		assertTrue(newUser.getPastOrders().isEmpty(), "Assert that the new User has an empty order list initialized.");
+		assertTrue(newUser.getOrders().isEmpty(), "Assert that the new User has an empty order list initialized.");
 		assertTrue(newUser.isActive(), "Assert that the new User is active.");
 	}
 

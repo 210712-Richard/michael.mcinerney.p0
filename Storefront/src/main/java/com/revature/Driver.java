@@ -60,13 +60,17 @@ public class Driver {
 
 		// As a customer, I can create an order for the items in my cart.
 		app.post("/users/:username/orders", userControl::createOrder);
+
+		// As a customer, I can cancel my ordered orders
+		// As a manager, I can refund and cancel a customer's order.
+		app.put("/users/:username/orders/:orderId", userControl::changeOrderStatus);
 		
-		//As a manager, I can add items to the inventory.
+		// As a manager, I can add items to the inventory.
+
+		// As a manager, I can edit amount in inventory of items.
+
+		// As a manager, I can add limited time deals for items.
+
 		
-		//As a manager, I can edit amount in inventory of items.
-		
-		//As a manager, I can add limited time deals for items.
-		
-		//As a manager, I can refund a customer's order.
 	}
 }

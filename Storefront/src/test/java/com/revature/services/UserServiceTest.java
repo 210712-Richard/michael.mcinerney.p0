@@ -157,7 +157,7 @@ public class UserServiceTest {
 
 		// These are set for the new user and should the same for all new users.
 		assertTrue(newUser.isActive(), "Assert that the new user isActive is set to true.");
-		assertTrue(newUser.getPastOrders().isEmpty(),
+		assertTrue(newUser.getOrders().isEmpty(),
 				"Assert that the new user's past orders list is initialized and empty.");
 		assertTrue(newUser.getCart().isEmpty(), "Assert that the new user's cart is initialized and empty.");
 
@@ -325,15 +325,15 @@ public class UserServiceTest {
 		Item item = new Item(0, "name", 20, 20, ItemCategory.COMPUTER_ACCESSORY,"desc");
 		user.getCart().add(new CartItem(0, item, 20, 20));
 		service.createOrder(user);
-		assertFalse(user.getPastOrders().isEmpty(), "Assert that the cart was added to the orders.");
+		assertFalse(user.getOrders().isEmpty(), "Assert that the cart was added to the orders.");
 
 		// Mockito verification for writeToFile
 		Mockito.verify(dao).writeToFile();
 
 		// Make sure empty cart does not create an order
-		int size = user.getPastOrders().size();
+		int size = user.getOrders().size();
 		service.createOrder(user);
-		assertEquals(size, user.getPastOrders().size(), "Assert that the empty cart did not add to the orders.");
+		assertEquals(size, user.getOrders().size(), "Assert that the empty cart did not add to the orders.");
 	}
 
 	@Test
@@ -393,7 +393,7 @@ public class UserServiceTest {
 		user.getCart().add(new CartItem(0, item, quantity, price));
 		user.createOrder();
 
-		Order order = user.getPastOrders().get(0);
+		Order order = user.getOrders().get(0);
 		service.changeOrderStatus(order, status);
 		assertEquals(status, order.getStatus(), "Assert that the order status was changed.");
 
