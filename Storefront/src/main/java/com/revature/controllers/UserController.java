@@ -256,7 +256,7 @@ public class UserController {
 		log.debug("User serialized from context: " + user);
 		AccountType loggedType = loggedUser.getAccountType();
 		// If the user is a customer and is trying to deactivate their account
-		if (loggedType.equals(AccountType.CUSTOMER) && !(!status && loggedUser.getUsername().equals(username))) {
+		if (loggedType.equals(AccountType.CUSTOMER) && (!status && loggedUser.getUsername().equals(username))) {
 
 			// Change the active status of the user.
 			userService.changeActiveStatus(loggedUser, status);
@@ -500,19 +500,21 @@ public class UserController {
 			ctx.html("Trying to add too many of the same item.");
 			return;
 		}
-		// Change the quantity in the cart.
-		userService.changeQuantityInCart(cartItem, cartItemQuantity.getQuantity());
-		log.trace("App has returned to changeQuantityOfCartItem.");
+
 		// If the cartItem is losing quantity
 		if (cartItemQuantity.getQuantity() < cartItem.getQuantity()) {
-			itemService.addAmountToInventory(item.getId(), cartItemQuantity.getQuantity());
+			itemService.addAmountToInventory(item.getId(), cartItem.getQuantity()-cartItemQuantity.getQuantity());
+			log.trace("App has returned to changeQuantityOfCartItem.");
 		}
 		// If the cartItem is gaining quantity
 		else if (cartItemQuantity.getQuantity() > cartItem.getQuantity()) {
-			itemService.removeAmountFromInventory(item.getId(), cartItemQuantity.getQuantity());
-
+			itemService.removeAmountFromInventory(item.getId(), cartItemQuantity.getQuantity()-cartItem.getQuantity());
+			log.trace("App has returned to changeQuantityOfCartItem.");
 		}
-
+		
+		// Change the quantity in the cart.
+		userService.changeQuantityInCart(cartItem, cartItemQuantity.getQuantity());
+		log.trace("App has returned to changeQuantityOfCartItem.");
 		ctx.json(loggedUser.getCart());
 		log.trace("App is leaving changeQuantityOfCartItem.");
 	}

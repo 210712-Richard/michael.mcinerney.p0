@@ -252,12 +252,6 @@ public class UserService {
 			// Get the item
 			Item item = itemDAO.getItem(cartItem.getItem().getId());
 
-			// Check and see if the item exists and the quantity is not bigger than the
-			// total quantity
-			if (item == null || quantity > item.getAmount() + cartItem.getQuantity()) {
-				return;
-			}
-
 			cartItem.setQuantity(quantity); // Set the quantity
 			log.debug("cartItem quantity is now " + cartItem.getQuantity());
 			ud.writeToFile();
