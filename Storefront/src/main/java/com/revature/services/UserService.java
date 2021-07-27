@@ -11,6 +11,7 @@ import com.revature.beans.CartItem;
 import com.revature.beans.Item;
 import com.revature.beans.Order;
 import com.revature.beans.OrderStatus;
+import com.revature.beans.Sale;
 import com.revature.beans.User;
 import com.revature.data.ItemDAO;
 import com.revature.data.UserDAO;
@@ -18,7 +19,6 @@ import com.revature.data.UserDAO;
 public class UserService {
 
 	private UserDAO ud = new UserDAO(); // The data handler for users
-
 	private ItemDAO itemDAO = new ItemDAO();
 
 	private static final Logger log = LogManager.getLogger(UserService.class); // Used to create log
@@ -71,7 +71,7 @@ public class UserService {
 		log.trace("App is now in getUser.");
 		log.debug("getUser parameters: username: " + username);
 
-		User retUser = ud.getUser(username);
+		User retUser = ud.getUserByName(username);
 		log.trace("App is exiting getUser");
 		log.debug("getUser returning User: " + retUser);
 		return retUser;
@@ -145,7 +145,7 @@ public class UserService {
 		log.trace("App has entered searchUserByName.");
 		log.debug("searchUserByName Parameters: searchString: " + searchString + ", type: " + type + ", status: "
 				+ status);
-		List<User> userList = ud.findUsersByName(searchString, type, status); // Search for users from the DAO
+		List<User> userList = ud.getUsersByName(searchString, type, status); // Search for users from the DAO
 		log.trace("App has returned to searchUserByName.");
 		log.debug("userList has been set to: " + userList);
 		ud.writeToFile();
@@ -187,9 +187,7 @@ public class UserService {
 			}
 
 			log.debug(activeUser.getUsername() + " now has a cart of " + activeUser.getCart());
-			itemDAO.removeAmountFromInventory(item.getId(), quantity);
-			log.trace("App has returned to addToCart.");
-			itemDAO.writeToFile();
+
 			log.trace("App has returned to addToCart.");
 			ud.writeToFile();
 			log.trace("App has returned to addToCart.");
@@ -231,16 +229,7 @@ public class UserService {
 			activeUser.setActive(status);
 			log.debug("User status has changed to " + activeUser.isActive());
 
-			// If the user has stuff in their cart, this will empty their cart
-			if (!activeUser.getCart().isEmpty()) {
-				activeUser.getCart().stream()
-						// Loop through and increase each item inventory to
-						.forEach((cartItem) -> {
-							itemDAO.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
-						});
-				activeUser.setCart(new ArrayList<CartItem>()); // Empty the cart.
-				log.debug("User status has changed to " + activeUser.getCart());
-			}
+
 			ud.writeToFile();
 			log.trace("App has returned to changeActiveStatus.");
 
@@ -263,27 +252,10 @@ public class UserService {
 			// Get the item
 			Item item = itemDAO.getItem(cartItem.getItem().getId());
 
-			// Check and see if the item exists and the quantity is not bigger than the
-			// total quantity
-			if (item == null || quantity > item.getAmount() + cartItem.getQuantity()) {
-				return;
-			}
-
-			// If the cartItem is losing quantity
-			if (quantity < cartItem.getQuantity()) {
-				itemDAO.addAmountToInventory(item.getId(), quantity);
-			}
-			// If the cartItem is gaining quantity
-			else if (quantity > cartItem.getQuantity()) {
-				itemDAO.removeAmountFromInventory(item.getId(), quantity);
-
-			}
-
 			cartItem.setQuantity(quantity); // Set the quantity
 			log.debug("cartItem quantity is now " + cartItem.getQuantity());
 			ud.writeToFile();
 			log.trace("App has returned to changeQuantityInCart.");
-			itemDAO.writeToFile();
 			log.trace("App has returned to changeQuantityInCart.");
 
 		}
@@ -315,10 +287,8 @@ public class UserService {
 				for (int i = cartItemId; i < user.getCart().size(); i++) {
 					user.getCart().get(i).setId(i);
 				}
-				itemDAO.addAmountToInventory(itemId, quantity);
+				
 				ud.writeToFile();
-				log.trace("App has returned to removeFromCart");
-				itemDAO.writeToFile();
 				log.trace("App has returned to removeFromCart");
 
 			}
@@ -342,16 +312,7 @@ public class UserService {
 			log.debug("order status is now " + order.getStatus());
 			// If the order is being cancelled (wasn't shipped yet), the items will go back
 			// to inventory.
-			if (status.equals(OrderStatus.CANCELLED)) {
-				order.getItemsOrdered().stream().forEach((orderItem) -> {
-					itemDAO.addAmountToInventory(orderItem.getItem().getId(), orderItem.getQuantity());
-					log.trace("App has returned to changeOrderStatus.");
-
-				});
-				itemDAO.writeToFile();
-				log.trace("App has returned to changeOrderStatus.");
-
-			}
+			
 			ud.writeToFile();
 			log.trace("App has returned to changeOrderStatus.");
 		}
@@ -388,7 +349,13 @@ public class UserService {
 	public void updateEmail(User user, String newEmail) {
 		log.trace("App has entered updateEmail");
 		log.debug("updateEmail parameters: user" + user + ", newEmail: " + newEmail);
-
+		
+		//If the email is null or blank
+		if (newEmail == null || newEmail.isBlank()) {
+			log.trace("App is exiting updateEmail");
+			return;
+		}
+		
 		user.setEmail(newEmail);
 		log.debug("user email set to " + user.getEmail());
 		ud.writeToFile();
@@ -406,7 +373,13 @@ public class UserService {
 	public void updatePassword(User user, String newPassword) {
 		log.trace("App has entered updatePassword");
 		log.debug("updatePassword parameters: user" + user + ", newPassword: " + newPassword);
-
+		
+		//If the password is null or blank
+		if (newPassword == null || newPassword.isBlank()) {
+			log.trace("App is exiting updatePassword");
+			return;
+		}
+		
 		user.setPassword(newPassword);
 		log.debug("user password set to " + user.getPassword());
 		ud.writeToFile();
@@ -414,6 +387,66 @@ public class UserService {
 
 		log.trace("App is exiting updatePassword");
 
+	}
+	
+	/**
+	 * Goes through each item with the same itemId and set the price
+	 * @param itemId The id of the item being changed
+	 * @param price The new price of the item
+	 */
+	public void setPriceInCarts(int itemId, double price) {
+		log.trace("App has entered setPriceInCarts.");
+		log.debug("setSaleInCarts Parameters: itemId: " + itemId + ", price: " + price);
+		ud.getUsers().stream()
+		//Filter the users by which have an active cart
+		.filter((user)->!user.getCart().isEmpty())
+		//Loop through the users' carts
+		.forEach((user)->user.getCart().stream()
+				//Only get the ones that have the correct id.
+				.filter((cartItem)->(cartItem.getItem().getId() == itemId))
+				//Loop through each cart item
+				.forEach((cartItem)-> {
+					//Correct the price
+					cartItem.getItem().setPrice(price);
+					
+					//If there isn't a sale right now
+					if (cartItem.getItem().getSale() == null) {
+						cartItem.setPrice(price);
+					}
+				}));
+		ud.writeToFile();
+		log.trace("App is exiting setPriceInCarts");
+	}
+	
+	/**
+	 * Goes through each item with the same itemId and set the Sale
+	 * @param itemId The id of the item being changed
+	 * @param sale The sale of the item
+	 */
+	public void setSaleInCarts(int itemId, Sale sale) {
+		log.trace("App has entered setSaleInCarts.");
+		log.debug("setSaleInCarts Parameters: itemId: " + itemId + ", sale: " + sale);
+		ud.getUsers().stream()
+		//Filter the users by which have an active cart
+		.filter((user)->!user.getCart().isEmpty())
+		//Loop through the users' carts
+		.forEach((user)->user.getCart().stream()
+				//Only get the ones that have the correct id.
+				.filter((cartItem)->(cartItem.getItem().getId() == itemId))
+				//Loop through each cart item
+				.forEach((cartItem)-> {
+					
+					cartItem.getItem().setSale(sale); //Set the sale
+					if (sale == null) { //The sale probably ended
+						cartItem.setPrice(cartItem.getItem().getPrice());
+
+					} else { // A new sale is being added
+						cartItem.setPrice(cartItem.getItem().getSale().getSalePrice());
+					}
+					log.debug("cartItem price has been set to " + cartItem.getPrice());
+				}));
+		ud.writeToFile();
+		log.trace("App is exiting setSaleInCarts");
 	}
 
 }

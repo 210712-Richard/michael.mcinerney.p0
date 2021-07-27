@@ -211,6 +211,7 @@ public class ItemController {
 		
 		//Create the sale
 		itemService.setSale(item, sale.getEndDate(), sale.getSalePrice());
+		userService.setSaleInCarts(item.getId(), item.getSale());
 		ctx.json(item);
 		log.trace("App is exiting putSaleInItem");
 	}
@@ -250,6 +251,7 @@ public class ItemController {
 		
 		//Create the sale
 		itemService.endSale(item);
+		userService.setSaleInCarts(item.getId(), null);
 		ctx.json(item);
 		log.trace("App is exiting putSaleInItem");
 
@@ -303,6 +305,11 @@ public class ItemController {
 		// Change the amount of the item
 		itemService.changePrice(item, price);
 		log.trace("App has returned to changePriceOfItem");
+		
+		//Alter all the items in the cart to the correct price
+		userService.setPriceInCarts(item.getId(), price);
+		log.trace("App has returned to changePriceOfItem");
+
 		ctx.json(item);
 		log.trace("App is exiting changePriceOfItem");
 	}
