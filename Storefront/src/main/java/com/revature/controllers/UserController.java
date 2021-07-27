@@ -1,5 +1,7 @@
 package com.revature.controllers;
 
+import java.util.ArrayList;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -258,7 +260,17 @@ public class UserController {
 
 			// Change the active status of the user.
 			userService.changeActiveStatus(loggedUser, status);
-
+			
+			// If the user has stuff in their cart, this will empty their cart
+			if (!loggedUser.getCart().isEmpty()) {
+				loggedUser.getCart().stream()
+						// Loop through and increase each item inventory to
+						.forEach((cartItem) -> {
+							itemService.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
+						});
+				loggedUser.setCart(new ArrayList<CartItem>()); // Empty the cart.
+				log.debug("User status has changed to " + loggedUser.getCart());
+			}
 			// Log the user out
 			ctx.req.getSession().invalidate();
 
@@ -275,7 +287,17 @@ public class UserController {
 				&& (!status && userToChange.getAccountType().equals(AccountType.CUSTOMER))) {
 			// Change the active status of the user.
 			userService.changeActiveStatus(userToChange, status);
-
+			
+			// If the user has stuff in their cart, this will empty their cart
+			if (!userToChange.getCart().isEmpty()) {
+				userToChange.getCart().stream()
+						// Loop through and increase each item inventory to
+						.forEach((cartItem) -> {
+							itemService.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
+						});
+				userToChange.setCart(new ArrayList<CartItem>()); // Empty the cart.
+				log.debug("User status has changed to " + userToChange.getCart());
+			}
 			ctx.json(userToChange);
 			log.trace("App is leaving changeActiveStatus.");
 			return;
@@ -286,7 +308,17 @@ public class UserController {
 				&& (!userToChange.getAccountType().equals(AccountType.ADMINISTRATOR))) {
 			// Change the active status of the user.
 			userService.changeActiveStatus(userToChange, status);
-
+			
+			// If the user has stuff in their cart and are being deactivated, this will empty their cart
+			if (!userToChange.getCart().isEmpty() && !status) {
+				userToChange.getCart().stream()
+						// Loop through and increase each item inventory to
+						.forEach((cartItem) -> {
+							itemService.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
+						});
+				userToChange.setCart(new ArrayList<CartItem>()); // Empty the cart.
+				log.debug("User status has changed to " + userToChange.getCart());
+			}
 			ctx.json(userToChange);
 			log.trace("App is leaving changeActiveStatus.");
 			return;
@@ -332,12 +364,12 @@ public class UserController {
 			log.trace("App is leaving addToCart.");
 			return;
 		}
-		
-		//Get the item from the service
+
+		// Get the item from the service
 		Item item = itemService.getItem(cartItem.getItem().getId());
 		log.debug("Item from itemService: " + item);
-		
-		//If the item was not found
+
+		// If the item was not found
 		if (item == null) {
 			ctx.status(404);
 			ctx.html("No item was found.");
@@ -356,7 +388,12 @@ public class UserController {
 		// Add the item to the cart.
 		userService.addToCart(loggedUser, item, cartItem.getQuantity());
 		log.trace("App has returned to addToCart.");
+		
+		//Remove the quantity from the item
+		itemService.removeAmountFromInventory(item.getId(), cartItem.getQuantity());
+		log.trace("App has returned to addToCart.");
 
+		
 		ctx.json(loggedUser.getCart());
 		log.trace("App is leaving addToCart.");
 	}
@@ -388,9 +425,20 @@ public class UserController {
 			log.trace("App is leaving removeFromCart.");
 			return;
 		}
-
-		// Add the item to the cart.
+		
+		//Get the cart item
+		CartItem cartItem = loggedUser.getCart().stream()
+		.filter((ci)->ci.getId() == cartItemId)
+		.findFirst()
+		.orElse(null);
+		log.debug("CartItem returned: " + cartItem);
+		
+		// Remove the item from the cart.
 		userService.removeFromCart(loggedUser, cartItemId);
+		log.trace("App has returned to removeFromCart.");
+		
+		//Add the quantity back to the inventory
+		itemService.addAmountToInventory(cartItem.getItem().getId(), cartItem.getQuantity());
 		log.trace("App has returned to removeFromCart.");
 
 		ctx.json(loggedUser.getCart());
@@ -442,10 +490,28 @@ public class UserController {
 			log.trace("App is leaving changeQuantityOfCartItem.");
 			return;
 		}
-
+		//Get the item
+		Item item = itemService.getItem(cartItem.getItem().getId());
+		log.debug("Item returned: " + item);
+		
+		//If the quantity is greater than the total amount available
+		if (cartItemQuantity.getQuantity() > cartItem.getQuantity() + item.getAmount()) {
+			ctx.status(400);
+			ctx.html("Trying to add too many of the same item.");
+			return;
+		}
 		// Change the quantity in the cart.
 		userService.changeQuantityInCart(cartItem, cartItemQuantity.getQuantity());
 		log.trace("App has returned to changeQuantityOfCartItem.");
+		// If the cartItem is losing quantity
+		if (cartItemQuantity.getQuantity() < cartItem.getQuantity()) {
+			itemService.addAmountToInventory(item.getId(), cartItemQuantity.getQuantity());
+		}
+		// If the cartItem is gaining quantity
+		else if (cartItemQuantity.getQuantity() > cartItem.getQuantity()) {
+			itemService.removeAmountFromInventory(item.getId(), cartItemQuantity.getQuantity());
+
+		}
 
 		ctx.json(loggedUser.getCart());
 		log.trace("App is leaving changeQuantityOfCartItem.");
@@ -491,9 +557,10 @@ public class UserController {
 		ctx.status(204);
 		log.trace("App is leaving createOrder.");
 	}
-	
+
 	/**
 	 * Change the status of an order
+	 * 
 	 * @param ctx The context
 	 */
 	public void changeOrderStatus(Context ctx) {
@@ -522,22 +589,17 @@ public class UserController {
 		// Get the order status and order to change
 		OrderStatus orderStatus = ctx.bodyAsClass(Order.class).getStatus();
 		Order order = loggedUser.getUsername().equals(username)
-				
-				//The user is logged in so the order will come from there
-				? loggedUser.getOrders().stream()
-				.filter((o) -> o.getId() == orderId)
-				.findFirst()
-				.orElse(null)
-				
-				//A manager is trying to change another user so the order will come from there
-				: userService.getUser(username).getOrders().stream()
-				.filter((o) -> o.getId() == orderId)
-				.findFirst()
-				.orElse(null);
-		log.debug("Order is: "+ order);
-		
+
+				// The user is logged in so the order will come from there
+				? loggedUser.getOrders().stream().filter((o) -> o.getId() == orderId).findFirst().orElse(null)
+
+				// A manager is trying to change another user so the order will come from there
+				: userService.getUser(username).getOrders().stream().filter((o) -> o.getId() == orderId).findFirst()
+						.orElse(null);
+		log.debug("Order is: " + order);
+
 		AccountType type = loggedUser.getAccountType();
-		
+
 		// If the order or status is null
 		if (order == null || orderStatus == null) {
 			ctx.status(404);
@@ -545,31 +607,45 @@ public class UserController {
 			log.trace("App is leaving changeOrderStatus.");
 			return;
 		}
-		
+
 		// If the user is a customer, the user can only change ordered orders to
 		// cancelled.
 		if (type.equals(AccountType.CUSTOMER) && orderStatus.equals(OrderStatus.CANCELLED)
 				&& order.getStatus().equals(OrderStatus.ORDERED)) {
 			userService.changeOrderStatus(order, orderStatus);
+
+			order.getItemsOrdered().stream().forEach((orderItem) -> {
+				itemService.addAmountToInventory(orderItem.getItem().getId(), orderItem.getQuantity());
+				log.trace("App has returned to changeOrderStatus.");
+			});
+
 			ctx.json(order);
 			log.trace("App is leaving changeOrderStatus.");
 			return;
 		}
-		
-		//If the user is a manager, and is 
-		//trying to cancel an ordered order 
-		//or refund a shipped order
+
+		// If the user is a manager, and is
+		// trying to cancel an ordered order
+		// or refund a shipped order
 		if (type.equals(AccountType.MANAGER) && ((orderStatus.equals(OrderStatus.CANCELLED)
-				&& order.getStatus().equals(OrderStatus.ORDERED)) 
-				|| (orderStatus.equals(OrderStatus.REFUNDED)
-				&& order.getStatus().equals(OrderStatus.SHIPPED)))) {
+				&& order.getStatus().equals(OrderStatus.ORDERED))
+				|| (orderStatus.equals(OrderStatus.REFUNDED) && order.getStatus().equals(OrderStatus.SHIPPED)))) {
 			userService.changeOrderStatus(order, orderStatus);
+
+			// If the order status is set to CANCELLED
+			if (orderStatus.equals(OrderStatus.CANCELLED)) {
+				order.getItemsOrdered().stream().forEach((orderItem) -> {
+					itemService.addAmountToInventory(orderItem.getItem().getId(), orderItem.getQuantity());
+					log.trace("App has returned to changeOrderStatus.");
+				});
+			}
+
 			ctx.json(order);
 			log.trace("App is leaving changeOrderStatus.");
 			return;
 		}
-		
-		//Left the order without making the change
+
+		// Left the order without making the change
 		ctx.status(403);
 		log.trace("App is leaving changeOrderStatus.");
 

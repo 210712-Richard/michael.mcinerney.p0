@@ -109,32 +109,32 @@ public class UserDAOTest {
 	public void testFindUsersByNameReturnsValidList() {
 		// Returns a non-empty list if the search string is in a User username with the
 		// type and status.
-		List<User> retList = dao.findUsersByName(user.getUsername(), user.getAccountType(), user.isActive());
+		List<User> retList = dao.getUsersByName(user.getUsername(), user.getAccountType(), user.isActive());
 		assertFalse(retList.isEmpty(), "Assert that users are returned even if part of username is passed in.");
 		
 		// Ensure empty string returns list of users
-		retList = dao.findUsersByName("", user.getAccountType(), user.isActive());
+		retList = dao.getUsersByName("", user.getAccountType(), user.isActive());
 		assertFalse(retList.isEmpty(), "Assert that users are returned even if blank username is passed.");
 	}
 
 	@Test
 	public void testFindUsersByNameReturnsEmptyList() {
 		// Returns empty if no search term matches
-		List<User> retList = dao.findUsersByName("WrongUsernameDefault", user.getAccountType(), user.isActive());
+		List<User> retList = dao.getUsersByName("WrongUsernameDefault", user.getAccountType(), user.isActive());
 		assertTrue(retList.isEmpty(), "Assert that if no username matches, return an empty list.");
 
 		// Returns empty if null search term is used.
-		retList = dao.findUsersByName(null, user.getAccountType(), user.isActive());
+		retList = dao.getUsersByName(null, user.getAccountType(), user.isActive());
 		assertTrue(retList.isEmpty(), "Assert that null search term returns an empty list.");
 
 		// Returns empty if null or wrong AccountType is used
-		retList = dao.findUsersByName(user.getUsername(), AccountType.MANAGER, user.isActive());
+		retList = dao.getUsersByName(user.getUsername(), AccountType.MANAGER, user.isActive());
 		assertTrue(retList.isEmpty(), "Assert that wrong AccountType returns empty list.");
-		retList = dao.findUsersByName(user.getUsername(), null, user.isActive());
+		retList = dao.getUsersByName(user.getUsername(), null, user.isActive());
 		assertTrue(retList.isEmpty(), "Assert that null AccountType returns empty list.");
 
 		// Returns empty if wrong active status is used
-		retList = dao.findUsersByName(user.getUsername(), AccountType.MANAGER, false);
+		retList = dao.getUsersByName(user.getUsername(), AccountType.MANAGER, false);
 		assertTrue(retList.isEmpty(), "Assert that wrong status returns empty list.");
 	}
 	

@@ -27,7 +27,7 @@ public class ItemServiceTest {
 
 	private static MockitoHelper<ItemDAO> mock; // Used to create the mock used for the ItemDAO.
 	private ItemDAO dao; // Used to verify ItemDAO methods are called.
-	private UserDAO userDAO;
+	private UserService userService;
 
 
 	@BeforeAll
@@ -172,21 +172,7 @@ public class ItemServiceTest {
 
 	}
 
-	@Test
-	public void testUpdateItem() {
-		// editItem should return Item and should call writeToFile();
-		dao = mock.setPrivateMock(service, "iDAO");
-		item.setAmount(0);
-		Item retItem = service.updateItem(item);
 
-		// Verify method was called
-		Mockito.verify(dao).writeToFile();
-
-		// Make sure returned item is the same as the item passed.
-		assertTrue(item.equals(retItem), "Assert that edited item passed in is the same.");
-		assertNull("Assert that null item returns null.", service.updateItem(null));
-
-	}
 	
 	@Test
 	public void testGetItem() {
@@ -236,14 +222,14 @@ public class ItemServiceTest {
 	@Test
 	public void testEndSale() {
 		dao = mock.setPrivateMock(service, "iDAO");
-		userDAO = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "userDAO");
+		userService = new MockitoHelper<UserService>(UserService.class).setPrivateMock(service, "userService");
 		item.setSale(new Sale());
 		service.endSale(item);
 		
 		ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
 		ArgumentCaptor<Sale> saleCaptor = ArgumentCaptor.forClass(Sale.class);
 		Mockito.verify(dao).writeToFile();
-		Mockito.verify(userDAO).setSaleInCarts(idCaptor.capture(), saleCaptor.capture());
+		Mockito.verify(userService).setSaleInCarts(idCaptor.capture(), saleCaptor.capture());
 		
 		assertNull("Assert that the Sale was set to null", item.getSale());
 		assertNull("Assert that the Sale passed to UserDAO was null", saleCaptor.getValue());
@@ -254,7 +240,7 @@ public class ItemServiceTest {
 	@Test
 	public void testSetSale() {
 		dao = mock.setPrivateMock(service, "iDAO");
-		userDAO = new MockitoHelper<UserDAO>(UserDAO.class).setPrivateMock(service, "userDAO");
+		userService = new MockitoHelper<UserService>(UserService.class).setPrivateMock(service, "userService");
 
 		double price = 20.00;
 		LocalDate endDate = LocalDate.now();
@@ -263,7 +249,7 @@ public class ItemServiceTest {
 		ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
 		ArgumentCaptor<Sale> saleCaptor = ArgumentCaptor.forClass(Sale.class);
 		Mockito.verify(dao).writeToFile();
-		Mockito.verify(userDAO).setSaleInCarts(idCaptor.capture(), saleCaptor.capture());
+		Mockito.verify(userService).setSaleInCarts(idCaptor.capture(), saleCaptor.capture());
 
 		
 		assertEquals(price, item.getSale().getSalePrice(), "Assert that the sale price set is the same as the one entered.");

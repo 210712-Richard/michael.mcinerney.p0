@@ -271,7 +271,7 @@ public class UserServiceTest {
 		ArgumentCaptor<Boolean> statusCaptor = ArgumentCaptor.forClass(Boolean.class);
 
 		// Verify the methods are called
-		Mockito.verify(dao).findUsersByName(usernameCaptor.capture(), typeCaptor.capture(), statusCaptor.capture());
+		Mockito.verify(dao).getUsersByName(usernameCaptor.capture(), typeCaptor.capture(), statusCaptor.capture());
 		Mockito.verify(dao).writeToFile(); // Verify that writeToFile is called.
 
 		// Verify it is the same values

@@ -171,7 +171,7 @@ public class UserDAO {
 	 * @return A list of users that contain the username and match the set type and
 	 *         status. An empty List otherwise.
 	 */
-	public List<User> findUsersByName(String searchString, AccountType type, boolean status) {
+	public List<User> getUsersByName(String searchString, AccountType type, boolean status) {
 		log.trace("App has entered findUsersByName.");
 		log.debug("findUsersByName Parameters: searchString: " + searchString + ", type: " + type + ", status: "
 				+ status);
@@ -192,63 +192,9 @@ public class UserDAO {
 		return retUsers;
 	}
 
-	/**
-	 * Goes through each item with the same itemId and set the Sale
-	 * @param itemId The id of the item being changed
-	 * @param sale The sale of the item
-	 */
-	public void setSaleInCarts(int itemId, Sale sale) {
-		log.trace("App has entered setSaleInCarts.");
-		log.debug("setSaleInCarts Parameters: itemId: " + itemId + ", sale: " + sale);
-		users.stream()
-		//Filter the users by which have an active cart
-		.filter((user)->!user.getCart().isEmpty())
-		//Loop through the users' carts
-		.forEach((user)->user.getCart().stream()
-				//Only get the ones that have the correct id.
-				.filter((cartItem)->(cartItem.getItem().getId() == itemId))
-				//Loop through each cart item
-				.forEach((cartItem)-> {
-					
-					cartItem.getItem().setSale(sale); //Set the sale
-					if (sale == null) { //The sale probably ended
-						cartItem.setPrice(cartItem.getItem().getPrice());
 
-					} else { // A new sale is being added
-						cartItem.setPrice(cartItem.getItem().getSale().getSalePrice());
-					}
-					log.debug("cartItem price has been set to " + cartItem.getPrice());
-				}));
-		log.trace("App is exiting setSaleInCarts");
-	}
 	
-	/**
-	 * Goes through each item with the same itemId and set the price
-	 * @param itemId The id of the item being changed
-	 * @param price The new price of the item
-	 */
-	public void setPriceInCarts(int itemId, double price) {
-		log.trace("App has entered setPriceInCarts.");
-		log.debug("setSaleInCarts Parameters: itemId: " + itemId + ", price: " + price);
-		users.stream()
-		//Filter the users by which have an active cart
-		.filter((user)->!user.getCart().isEmpty())
-		//Loop through the users' carts
-		.forEach((user)->user.getCart().stream()
-				//Only get the ones that have the correct id.
-				.filter((cartItem)->(cartItem.getItem().getId() == itemId))
-				//Loop through each cart item
-				.forEach((cartItem)-> {
-					//Correct the price
-					cartItem.getItem().setPrice(price);
-					
-					//If there isn't a sale right now
-					if (cartItem.getItem().getSale() == null) {
-						cartItem.setPrice(price);
-					}
-				}));
-		log.trace("App is exiting setPriceInCarts");
-	}
+
 
 	/**
 	 * Save the current list of users to the file
