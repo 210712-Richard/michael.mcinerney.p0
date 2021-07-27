@@ -452,52 +452,7 @@ public class UserServiceTest {
 		assertNotEquals(cartItem.getId(), cartItemId+1, "Assert that the cart item still in the cart has a different id.");
 		Mockito.verify(dao).writeToFile();
 	}
-	
-//	@Test
-//	public void testSetSaleInCart() {
-//		dao = mockHelper.setPrivateMock(service, "ud");
-//		Sale sale = new Sale(LocalDate.now(), 19.99);
-//		Item item = new Item(0, "name", 200.00, 10, ItemCategory.COMPUTER_ACCESSORY, "desc");
-//		CartItem cartItem = new CartItem(user.getCart().size(), item, 5, item.getPrice());
-//		//Add the item to the cart and the sale to the item after the fact.
-//		user.getCart().add(cartItem);
-//		item.setSale(sale);
-//		
-//		service.setSaleInCarts(item.getId(), sale);
-//		
-//		//Make sure the price in the cart item is the same as the sale
-//		assertEquals(sale.getSalePrice(), cartItem.getPrice(), "Assert that the price changes when the sale is passed in.");
-//		Mockito.verify(dao).writeToFile();
-//		
-//		//Make sure getting rid of the sale changes the price back
-//		service.setSaleInCarts(item.getId(), null);
-//		assertEquals(item.getPrice(), cartItem.getPrice(), "Assert that the price changes when a null sale is passed in.");
-//
-//	}
-//	
-//	@Test
-//	public void testSetPriceInCart() {
-//		dao = mockHelper.setPrivateMock(service, "ud");
-//		double newPrice = 100.00;
-//		Item item = new Item(0, "name", 200.00, 10, ItemCategory.COMPUTER_ACCESSORY, "desc");
-//		CartItem cartItem = new CartItem(user.getCart().size(), item, 5, item.getPrice());
-//		//Add the item to the cart and the sale to the item after the fact.
-//		user.getCart().add(cartItem);
-//		
-//		service.setPriceInCarts(item.getId(), newPrice);
-//		
-//		//Make sure the price was changed
-//		assertEquals(newPrice, cartItem.getPrice(), "Assert that the price changes when a new price is passed in.");
-//		Mockito.verify(dao).writeToFile();
-//
-//		//Make sure the price doesn't change when a sale is added
-//		Sale sale = new Sale(LocalDate.now(), 19.99);
-//		item.setSale(sale);
-//		
-//		service.setPriceInCarts(item.getId(), 1.0);
-//		assertEquals(newPrice, cartItem.getPrice(), "Assert that the price doesn't change when a new sale active.");
-//
-//	}
+
 	
 	@Test
 	public void testUpdateEmail() {
@@ -514,8 +469,6 @@ public class UserServiceTest {
 		
 		service.updateEmail(user, "    ");
 		assertEquals(user.getEmail(), newEmail, "Assert that the email did not change to an empty or blank string.");
-
-		
 	}
 	
 	@Test
