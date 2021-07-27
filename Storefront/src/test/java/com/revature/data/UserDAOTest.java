@@ -138,5 +138,22 @@ public class UserDAOTest {
 		assertTrue(retList.isEmpty(), "Assert that wrong status returns empty list.");
 	}
 	
+	@Test
+	public void testGetUserByName() {
+		
+		User u = dao.getUserByName(user.getUsername());
+		
+		assertEquals(u.getUsername(), user.getUsername(), "Assert that the user returned has the same username given.");
+		
+		User wrongUser = dao.getUserByName("Random Name");
+		
+		assertNull("Assert that an incorrect username returns a null user.", wrongUser);
+		
+		User nullUser = dao.getUserByName(null);
+		
+		assertNull("Assert that a null username returns a null user.", nullUser);
+		
+		
 
+	}
 }

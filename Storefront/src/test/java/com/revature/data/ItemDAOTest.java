@@ -1,5 +1,7 @@
 package com.revature.data;
 
+import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,21 +14,16 @@ import org.junit.jupiter.api.Test;
 
 import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
-import com.revature.util.MockitoHelper;
 
 public class ItemDAOTest {
 	private ItemDAO dao;
 	private static Item item;
 
 	private ArrayList<Item> inv; // Inventory list to make sure methods are called.
-	private static MockitoHelper<ArrayList> mock; // Mock to verify methods. Note: Mockito does not work well with
-													// static fields.
 
 	@BeforeAll
 	public static void beforeStart() {
-		// The default item added to the inventory.
 
-		mock = new MockitoHelper<ArrayList>(ArrayList.class);
 	}
 
 	@BeforeEach
@@ -59,6 +56,17 @@ public class ItemDAOTest {
 		
 		assertTrue(dao.getInventory().contains(isAdded), "Assert that the item was added to inventory.");
 
+	}
+	
+	@Test
+	public void testGetItem() {
+		Item i = dao.getItem(item.getId());
+		
+		assertEquals(i.getId(), item.getId(), "Assert that the item returned has the same Id");
+		
+		Item wrongItem = dao.getItem(999);
+		assertNull("Assert that an invalid id results in a null item being returned.", wrongItem);
+		
 	}
 
 

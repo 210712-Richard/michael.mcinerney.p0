@@ -113,7 +113,7 @@ public class UserDAO {
 	 * @param username The username of the User to get
 	 * @return The User with the same username and password
 	 */
-	public User getUser(String username) {
+	public User getUserByName(String username) {
 		log.trace("App has entered getUser.");
 		log.debug("getUser Parameters: username: " + username);
 		// if the username is null or blank

@@ -3,8 +3,10 @@ package com.revature.services;
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -19,6 +21,7 @@ import com.revature.beans.Item;
 import com.revature.beans.ItemCategory;
 import com.revature.beans.Order;
 import com.revature.beans.OrderStatus;
+import com.revature.beans.Sale;
 import com.revature.beans.User;
 import com.revature.data.UserDAO;
 import com.revature.util.MockitoHelper;
@@ -348,12 +351,6 @@ public class UserServiceTest {
 		// Mockito verification for writeToFile
 		Mockito.verify(dao).writeToFile();
 
-		// If user is being deactivated and has a cart, cart should be emptied
-		Item item = new Item(0, "name", 20, 20, ItemCategory.COMPUTER_ACCESSORY,"desc");
-		user.getCart().add(new CartItem(0, item, 20, 20));
-		service.changeActiveStatus(user, status);
-		assertTrue(user.getCart().isEmpty(), "Assert that the cart was empty before User was deactivated.");
-
 	}
 
 	@Test
@@ -427,6 +424,117 @@ public class UserServiceTest {
 		service.changeCartItemPrice(cartItem, 0.0);
 		assertEquals(cartItem.getPrice(), newPrice, "Assert that the price didn't change to the new price.");
 
+	}
+	
+	@Test
+	public void testRemoveFromCart() {
+		dao = mockHelper.setPrivateMock(service, "ud");
+		int cartItemId = 0;
+		Item item = new Item(0, "name", 200.00, 10, ItemCategory.COMPUTER_ACCESSORY, "desc");
+		Item item2 = new Item(1, "name2", 20.00, 150, ItemCategory.MONITOR, "desc2");
+		//Have two cart items to add to the cart
+		CartItem cartItem = new CartItem(cartItemId, item, 5, item.getPrice());
+		CartItem cartItem2 = new CartItem(cartItemId+1, item2, 10, item2.getPrice());
+		
+		//Add the item to the cart and the sale to the item after the fact.
+		user.getCart().add(cartItem);
+		
+		//Make sure that the incorrect cartItemId doesn't change the cartItem
+		service.removeFromCart(user, 1);
+		assertTrue(user.getCart().contains(cartItem), "Assert that the cart item is still in the cart");
+		
+		//Add the second item to test that the id changes
+		user.getCart().add(cartItem2);
+		
+		//Make sure that the cart item is removed, and the other cart item id changes
+		service.removeFromCart(user, cartItemId);
+		assertFalse(user.getCart().contains(cartItem), "Assert that the cart item has been removed from the cart");
+		assertNotEquals(cartItem.getId(), cartItemId+1, "Assert that the cart item still in the cart has a different id.");
+		Mockito.verify(dao).writeToFile();
+	}
+	
+//	@Test
+//	public void testSetSaleInCart() {
+//		dao = mockHelper.setPrivateMock(service, "ud");
+//		Sale sale = new Sale(LocalDate.now(), 19.99);
+//		Item item = new Item(0, "name", 200.00, 10, ItemCategory.COMPUTER_ACCESSORY, "desc");
+//		CartItem cartItem = new CartItem(user.getCart().size(), item, 5, item.getPrice());
+//		//Add the item to the cart and the sale to the item after the fact.
+//		user.getCart().add(cartItem);
+//		item.setSale(sale);
+//		
+//		service.setSaleInCarts(item.getId(), sale);
+//		
+//		//Make sure the price in the cart item is the same as the sale
+//		assertEquals(sale.getSalePrice(), cartItem.getPrice(), "Assert that the price changes when the sale is passed in.");
+//		Mockito.verify(dao).writeToFile();
+//		
+//		//Make sure getting rid of the sale changes the price back
+//		service.setSaleInCarts(item.getId(), null);
+//		assertEquals(item.getPrice(), cartItem.getPrice(), "Assert that the price changes when a null sale is passed in.");
+//
+//	}
+//	
+//	@Test
+//	public void testSetPriceInCart() {
+//		dao = mockHelper.setPrivateMock(service, "ud");
+//		double newPrice = 100.00;
+//		Item item = new Item(0, "name", 200.00, 10, ItemCategory.COMPUTER_ACCESSORY, "desc");
+//		CartItem cartItem = new CartItem(user.getCart().size(), item, 5, item.getPrice());
+//		//Add the item to the cart and the sale to the item after the fact.
+//		user.getCart().add(cartItem);
+//		
+//		service.setPriceInCarts(item.getId(), newPrice);
+//		
+//		//Make sure the price was changed
+//		assertEquals(newPrice, cartItem.getPrice(), "Assert that the price changes when a new price is passed in.");
+//		Mockito.verify(dao).writeToFile();
+//
+//		//Make sure the price doesn't change when a sale is added
+//		Sale sale = new Sale(LocalDate.now(), 19.99);
+//		item.setSale(sale);
+//		
+//		service.setPriceInCarts(item.getId(), 1.0);
+//		assertEquals(newPrice, cartItem.getPrice(), "Assert that the price doesn't change when a new sale active.");
+//
+//	}
+	
+	@Test
+	public void testUpdateEmail() {
+		dao = mockHelper.setPrivateMock(service, "ud");
+		String newEmail = "new@new.com";
+		
+		service.updateEmail(user, newEmail);
+		
+		assertEquals(user.getEmail(), newEmail, "Assert that the email was changed in the user.");
+		Mockito.verify(dao).writeToFile();
+		
+		service.updateEmail(user, null);
+		assertEquals(user.getEmail(), newEmail, "Assert that the email did not change to null.");
+		
+		service.updateEmail(user, "    ");
+		assertEquals(user.getEmail(), newEmail, "Assert that the email did not change to an empty or blank string.");
+
+		
+	}
+	
+	@Test
+	public void testUpdatePassword() {
+		dao = mockHelper.setPrivateMock(service, "ud");
+		String newPassword = "new";
+		
+		service.updatePassword(user, newPassword);
+		
+		assertEquals(user.getPassword(), newPassword, "Assert that the password was changed in the user.");
+		Mockito.verify(dao).writeToFile();
+		
+		service.updatePassword(user, null);
+		assertEquals(user.getPassword(), newPassword, "Assert that the password did not change to null.");
+		
+		service.updatePassword(user, "    ");
+		assertEquals(user.getPassword(), newPassword, "Assert that the password did not change to an empty or blank string.");
+
+		
 	}
 
 }

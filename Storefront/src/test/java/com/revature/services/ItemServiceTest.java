@@ -222,42 +222,28 @@ public class ItemServiceTest {
 	@Test
 	public void testEndSale() {
 		dao = mock.setPrivateMock(service, "iDAO");
-		userService = new MockitoHelper<UserService>(UserService.class).setPrivateMock(service, "userService");
 		item.setSale(new Sale());
 		service.endSale(item);
 		
-		ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
-		ArgumentCaptor<Sale> saleCaptor = ArgumentCaptor.forClass(Sale.class);
 		Mockito.verify(dao).writeToFile();
-		Mockito.verify(userService).setSaleInCarts(idCaptor.capture(), saleCaptor.capture());
 		
 		assertNull("Assert that the Sale was set to null", item.getSale());
-		assertNull("Assert that the Sale passed to UserDAO was null", saleCaptor.getValue());
-		assertEquals(idCaptor.getValue(), item.getId(), "Assert that the id passed into UserDAO was the item's id.");
 
 	}
 	
 	@Test
 	public void testSetSale() {
 		dao = mock.setPrivateMock(service, "iDAO");
-		userService = new MockitoHelper<UserService>(UserService.class).setPrivateMock(service, "userService");
 
 		double price = 20.00;
 		LocalDate endDate = LocalDate.now();
 		service.setSale(item, endDate, price);
 		
-		ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
-		ArgumentCaptor<Sale> saleCaptor = ArgumentCaptor.forClass(Sale.class);
 		Mockito.verify(dao).writeToFile();
-		Mockito.verify(userService).setSaleInCarts(idCaptor.capture(), saleCaptor.capture());
 
 		
 		assertEquals(price, item.getSale().getSalePrice(), "Assert that the sale price set is the same as the one entered.");
 		assertEquals(endDate, item.getSale().getEndDate(), "Assert that the end date set is the same as the one entered");
-		
-		//Make sure values passed in are correct
-		assertEquals(idCaptor.getValue(), item.getId(), "Assert that the id passed into UserDAO was the item's id.");
-		assertEquals(saleCaptor.getValue(), item.getSale(), "Assert that the id passed into UserDAO was the item's id.");
 		
 		item.setSale(null);
 		service.setSale(item, null, price);
@@ -280,6 +266,21 @@ public class ItemServiceTest {
 		
 		service.changeAmount(item, -1);
 		assertEquals(item.getAmount(), newQuantity, "Assert that the amount in inventory did not change with invalid quantity.");
+
+	}
+	
+	@Test
+	public void testChangePrice() {
+		dao = mock.setPrivateMock(service, "iDAO");
+		double newPrice = 10.0;
+		service.changePrice(item, newPrice);
+		
+		assertEquals(item.getPrice(), newPrice, "Assert that the amount in inventory is the same as the one entered.");
+		
+		Mockito.verify(dao).writeToFile();
+		
+		service.changePrice(item, -1.0);
+		assertEquals(item.getPrice(), newPrice, "Assert that the amount in inventory did not change with invalid quantity.");
 
 	}
 }

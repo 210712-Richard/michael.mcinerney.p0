@@ -71,7 +71,7 @@ public class UserService {
 		log.trace("App is now in getUser.");
 		log.debug("getUser parameters: username: " + username);
 
-		User retUser = ud.getUser(username);
+		User retUser = ud.getUserByName(username);
 		log.trace("App is exiting getUser");
 		log.debug("getUser returning User: " + retUser);
 		return retUser;
@@ -259,7 +259,6 @@ public class UserService {
 			log.trace("App has returned to changeQuantityInCart.");
 
 		}
-		ud.writeToFile();
 		log.trace("App is exiting changeQuantityInCart.");
 	}
 
@@ -350,7 +349,13 @@ public class UserService {
 	public void updateEmail(User user, String newEmail) {
 		log.trace("App has entered updateEmail");
 		log.debug("updateEmail parameters: user" + user + ", newEmail: " + newEmail);
-
+		
+		//If the email is null or blank
+		if (newEmail == null || newEmail.isBlank()) {
+			log.trace("App is exiting updateEmail");
+			return;
+		}
+		
 		user.setEmail(newEmail);
 		log.debug("user email set to " + user.getEmail());
 		ud.writeToFile();
@@ -368,7 +373,13 @@ public class UserService {
 	public void updatePassword(User user, String newPassword) {
 		log.trace("App has entered updatePassword");
 		log.debug("updatePassword parameters: user" + user + ", newPassword: " + newPassword);
-
+		
+		//If the password is null or blank
+		if (newPassword == null || newPassword.isBlank()) {
+			log.trace("App is exiting updatePassword");
+			return;
+		}
+		
 		user.setPassword(newPassword);
 		log.debug("user password set to " + user.getPassword());
 		ud.writeToFile();
