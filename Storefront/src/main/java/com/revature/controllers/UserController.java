@@ -131,6 +131,90 @@ public class UserController {
 
 		}
 	}
+	
+	/**
+	 * Get the logged in users cart
+	 * @param ctx The context
+	 */
+	public void getCart(Context ctx) {
+		log.trace("App has entered getCart.");
+		log.debug("Request body: " + ctx.body());
+
+		// Get the logged user
+		User loggedUser = ctx.sessionAttribute("loggedUser");
+		log.debug("loggedUser: " + loggedUser);
+
+		// Get the username from the path
+		String username = ctx.pathParam("username");
+
+		// If the user is not logged in or is trying to change the wrong user's password
+		if (loggedUser == null || !loggedUser.getUsername().equals(username)) {
+			ctx.status(403);
+			log.trace("App is leaving getCart.");
+			return;
+		}
+		
+		//Returns the user cart
+		if (loggedUser.getCart() == null || loggedUser.getCart().isEmpty()) {
+			ctx.status(404);
+			ctx.html("There was no cart to get");
+			log.trace("App is leaving getCart.");
+			return;
+		}
+		ctx.json(loggedUser.getCart());
+		log.trace("App is leaving getOrders.");
+	}
+	
+	/**
+	 * Get the logged in users orders
+	 * @param ctx The context
+	 */
+	public void getOrders(Context ctx) {
+		log.trace("App has entered getCart.");
+		log.debug("Request body: " + ctx.body());
+
+		// Get the logged user
+		User loggedUser = ctx.sessionAttribute("loggedUser");
+		log.debug("loggedUser: " + loggedUser);
+
+		// Get the username from the path
+		String username = ctx.pathParam("username");
+
+		// If the user is not logged in or is trying to change the wrong user's password
+		if (loggedUser == null || (!loggedUser.getUsername().equals(username) &&
+				!loggedUser.getAccountType().equals(AccountType.MANAGER))) {
+			ctx.status(403);
+			log.trace("App is leaving getOrders.");
+			return;
+		}
+		
+		//The user is a manager
+		if (loggedUser.getAccountType().equals(AccountType.MANAGER)) {
+			User user = userService.getUser(username);
+			
+			//If the user is null or has no orders to display
+			if (user == null || user.getOrders() == null || user.getOrders().isEmpty()) {
+				ctx.status(404);
+				ctx.html("The user does not exist or the user has no orders.");
+				log.trace("App is leaving getOrders.");
+				return;
+			}
+			
+			ctx.json(user.getOrders());
+			log.trace("App is leaving getOrders.");
+			return;
+		}
+		
+		//Returns the logged in user's cart
+		if (loggedUser.getOrders() == null || loggedUser.getOrders().isEmpty()) {
+			ctx.status(404);
+			ctx.html("There was no cart to get");
+			log.trace("App is leaving getOrders.");
+			return;
+		}
+		ctx.json(loggedUser.getOrders());
+		log.trace("App is leaving getOrders.");
+	}
 
 	/**
 	 * Allows the user to change their password
